@@ -2,9 +2,6 @@
 use crate::creature::Creature;
 use crate::constants;
 
-pub static RIGHT_SENSE: u8 = 0;
-pub static LEFT_SENSE: u8 = 1;
-
 pub enum Sensor<'a> {
     Left(&'a Creature),
     Right(&'a Creature),    
@@ -19,6 +16,7 @@ pub enum Decision {
     MoveDown,
     Sprint,
     Walk,
+    Nothing,
     Unknown,
 }
 
@@ -30,6 +28,7 @@ pub fn decide(decision: u8) -> Decision {
         3 => Decision::MoveDown,
         4 => Decision::Sprint,
         5 => Decision::Walk,
+        6 => Decision::Nothing,
         _ => Decision::Unknown,
     }
 }
@@ -45,26 +44,26 @@ pub fn sense(sensor: Sensor) -> f32 {
 
 pub fn sense_up(creature: &Creature) -> f32 {
     let mut distance_to_up = creature.state.position.1;
-    distance_to_up /= constants::get_window_height() as f32;
-    return distance_to_up;
+    distance_to_up /= constants::get_window_height();
+    return distance_to_up as f32;
 }
 
 pub fn sense_down(creature: &Creature) -> f32 {
-    let window_height = constants::get_window_height() as f32;
+    let window_height = constants::get_window_height();
     let mut distance_to_down = window_height - creature.state.position.1;
     distance_to_down /= window_height;
-    return distance_to_down;
+    return distance_to_down as f32;
 }
 
 pub fn sense_right(creature: &Creature) -> f32 {
     let mut distance_to_right = creature.state.position.0;
-    distance_to_right /= constants::get_window_width() as f32;
+    distance_to_right /= constants::get_window_width() as isize;
     return distance_to_right as f32;
 }
 
 pub fn sense_left(creature: &Creature) -> f32 {
-    let window_width = constants::get_window_width() as f32;
+    let window_width = constants::get_window_width() as isize;
     let mut distance_to_left = window_width - creature.state.position.0;
     distance_to_left /= window_width;
-    return distance_to_left;
+    return distance_to_left as f32;
 }

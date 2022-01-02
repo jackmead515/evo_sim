@@ -1,4 +1,14 @@
 use opengl_graphics::{GlGraphics};
+use rand::Rng;
+use rand;
+
+pub fn random_color() -> [f32; 4] {
+    let mut range = rand::thread_rng();
+    let r = range.gen_range(0usize, 255usize);
+    let g = range.gen_range(0usize, 255usize);
+    let b = range.gen_range(0usize, 255usize);
+    return [r as f32, g as f32, b as f32, 1.0];
+}
 
 pub fn circle(
     color: [f32; 4],

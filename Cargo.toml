@@ -4,10 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-nalgebra = "0.29.0"
+rapier2d = { version = "0.11.1", features = [ "simd-stable", "parallel" ] }
+tiny_http = "0.9.0"
+prost = "0.9.0"
+prost-build = "0.9.0"
 rand = "0.7.3"
-petgraph = "0.6.0"
-piston = "0.53.0"
-piston2d-graphics = "0.40.0"
-pistoncore-glutin_window = "0.69.0"
-piston2d-opengl_graphics = "0.78.0"
+env_logger = "0.9.0"
+log = "0.4.14"
+
+[profile.dev.package.rapier2d]
+opt-level = 3
+
+[profile.release]
+codegen-units = 1

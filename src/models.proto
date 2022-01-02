@@ -1,0 +1,72 @@
+syntax = "proto2";
+
+package models;
+
+/**
+/simulations
+  /cycles
+    /step
+      /creatures
+        /states
+        /brains
+          /neurons
+        /traits
+*/
+
+message Traits {
+  required uint32 id = 1;
+}
+
+enum Activation {
+  Sigmoid = 1;
+  Softmax = 2;
+}
+
+message Neuron {
+  required Activation activation = 1;
+  required double bias = 2;
+  repeated double weights = 3;
+}
+
+message Brain {
+  required Activation activation = 1;
+  repeated Neuron hidden = 2;
+  repeated Neuron output = 3;
+}
+
+message State {
+  required uint32 id = 1;
+}
+
+message Vertex {
+  repeated double points = 1;
+}
+
+message Hull {
+  repeated Vertex verticies = 1;
+}
+
+message Creature {
+    required uint32 id = 1;
+    required Hull hull = 2;
+    required Traits traits = 3;
+    required Brain brain = 4;
+    optional State state = 5;
+}
+
+message Step {
+  required uint32 id = 1;
+  required uint32 simulationId = 2;
+  map<uint32, Creature> creatures = 3;
+}
+
+message Cycle {
+  required uint32 id = 1;
+  required uint32 simulationId = 2;
+  repeated uint32 stepIds = 3;
+}
+
+message Simulation {
+  required uint32 id = 1;
+  repeated uint32 cycleIds = 2;
+}

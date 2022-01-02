@@ -2,8 +2,9 @@ use crate::creature::Creature;
 use crate::physics::vec;
 use crate::physics::math;
 
+
 /// Tests if point is contained within a rectangle
-pub fn contains(point: &[f32; 2], rect: &[f32; 4]) -> bool {
+pub fn contains(point: &[isize; 2], rect: &[isize; 4]) -> bool {
     let x1 = rect[0];
     let y1 = rect[1];
     let x2 = x1 + rect[2];
@@ -17,20 +18,20 @@ pub fn contains(point: &[f32; 2], rect: &[f32; 4]) -> bool {
 }
 
 /// Tests if two rectangles are intersecting
-pub fn intersecting(rect1: &[f32; 4], rect2: &[f32; 4]) -> bool {
+pub fn intersecting(rect1: &[isize; 4], rect2: &[isize; 4]) -> bool {
     return rect1[0] < rect2[0] + rect2[2]
         && rect1[0] + rect1[2] > rect2[0]
         && rect1[1] < rect2[1] + rect2[3]
         && rect1[1] + rect1[3] > rect2[1];
 }
 
-pub fn boundary_collide(width: &f32, height: &f32, creature: &mut Creature) {
+pub fn world_collide(width: &isize, height: &isize, creature: &mut Creature) {
     let bounds = creature.get_bounds();
-    if bounds[0] < 0.0 {
-        creature.state.position.0 = 0.0;
+    if bounds[0] < 0 {
+        creature.state.position.0 = 0;
     }
-    if bounds[1] < 0.0 {
-        creature.state.position.1 = 0.0;
+    if bounds[1] < 0 {
+        creature.state.position.1 = 0;
     }
     if bounds[0] + bounds[2] > *width {
         creature.state.position.0 = width - bounds[2];
@@ -115,7 +116,11 @@ pub fn sat_collision(rect1: &[f32; 4], rect2: &[f32; 4]) -> [f32; 3] {
         }
     }
 
-    let mtv = [min_axis[0] * min_overlap, min_axis[1] * min_overlap];
+    let overlap_add = 0.1;
+    let mtv = [
+        (min_axis[0] * min_overlap) + overlap_add,
+        (min_axis[1] * min_overlap) + overlap_add
+    ];
     let c1c2 = vec::subtract(&rect_center(rect1), &rect_center(rect2));
     if vec::dot(&min_axis, &c1c2) < 0.0 {
         return [1.0, -mtv[0], -mtv[1]];
@@ -124,31 +129,33 @@ pub fn sat_collision(rect1: &[f32; 4], rect2: &[f32; 4]) -> [f32; 3] {
     return [1.0, mtv[0], mtv[1]];
 }
 
-pub fn elastic_collision(c1: &mut Creature, c2: &mut Creature, damping: &f32) {
-    let rect1 = c1.get_bounds();
-    let rect2 = c2.get_bounds();
+// pub fn elastic_collision(c1: &Creature, c2: &Creature, damping: &f32) -> (f32, f32, f32, f32) {
+//     let rect1 = c1.get_bounds();
+//     let rect2 = c2.get_bounds();
 
-    let dx = rect2[0] - rect1[0];
-    let dy = rect2[1] - rect1[1];
-    let dr = (dx * dx + dy * dy).sqrt();
+//     let dx = rect2[0] - rect1[0];
+//     let dy = rect2[1] - rect1[1];
+//     let dr = (dx * dx + dy * dy).sqrt();
   
-    let nx = dx / dr; //normal x
-    let ny = dy / dr; //normal y
+//     let nx = dx / dr; //normal x
+//     let ny = dy / dr; //normal y
   
-    let tx = -ny; //tangent x
-    let ty = nx; //tangent y
+//     let tx = -ny; //tangent x
+//     let ty = nx; //tangent y
   
-    let dpt1 = c1.state.velocity.0 * tx + c1.state.velocity.1 * ty; //dot product of tangent
-    let dpt2 = c2.state.velocity.0 * tx + c2.state.velocity.1 * ty;
+//     let dpt1 = c1.state.velocity.0 * tx + c1.state.velocity.1 * ty; //dot product of tangent
+//     let dpt2 = c2.state.velocity.0 * tx + c2.state.velocity.1 * ty;
   
-    let dpn1 = c1.state.velocity.0 * nx + c1.state.velocity.1 * ny; //dot product of normal
-    let dpn2 = c2.state.velocity.0 * nx + c2.state.velocity.1 * ny;
+//     let dpn1 = c1.state.velocity.0 * nx + c1.state.velocity.1 * ny; //dot product of normal
+//     let dpn2 = c2.state.velocity.0 * nx + c2.state.velocity.1 * ny;
   
-    let m1 = (dpn1 * (c1.traits.mass - c2.traits.mass) + 2.0 * c2.traits.mass * dpn2) / (c1.traits.mass + c2.traits.mass); //momentum
-    let m2 = (dpn2 * (c2.traits.mass - c1.traits.mass) + 2.0 * c1.traits.mass * dpn1) / (c1.traits.mass + c2.traits.mass);
+//     let m1 = (dpn1 * (c1.traits.mass - c2.traits.mass) + 2.0 * c2.traits.mass * dpn2) / (c1.traits.mass + c2.traits.mass); //momentum
+//     let m2 = (dpn2 * (c2.traits.mass - c1.traits.mass) + 2.0 * c1.traits.mass * dpn1) / (c1.traits.mass + c2.traits.mass);
     
-    c1.state.velocity.0 = (tx * dpt1 + nx * m1) * damping;
-    c1.state.velocity.1 = (ty * dpt1 + ny * m1) * damping;
-    c2.state.velocity.0 = (tx * dpt2 + nx * m2) * damping;
-    c2.state.velocity.1 = (ty * dpt2 + ny * m2) * damping;
-}
+//     return (
+//         (tx * dpt1 + nx * m1) * damping,
+//         (ty * dpt1 + ny * m1) * damping,
+//         (tx * dpt2 + nx * m2) * damping,
+//         (ty * dpt2 + ny * m2) * damping
+//     );
+// }
