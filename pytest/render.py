@@ -22,7 +22,7 @@ class Container:
 
     def __init__(self):
         self.window = Tk()
-        self.canvas = Canvas(self.window, width=800, height=640, bg='black')
+        self.canvas = Canvas(self.window, width=600, height=600, bg='black')
         self.canvas.pack()
         self.cycle_index = 0
 
@@ -87,7 +87,7 @@ class Container:
     def mainloop(self):
         while True:
             self.window.update()
-            self.window.after(1, self.update_state())
+            self.window.after(10, self.update_state())
 
 
 if __name__ == "__main__":

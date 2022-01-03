@@ -4,9 +4,12 @@ use std::time::{Instant};
 use log::{info};
 
 use crate::engine;
+use crate::state;
 
 pub fn start() {
     info!("Starting evo sim server");
+
+    let mut simulation = state::create::simulation(1);
 
     let server = Server::http("0.0.0.0:8000").unwrap();
 
@@ -20,7 +23,8 @@ pub fn start() {
             info!("Request to perform a cycle recieved");
             
             let now = Instant::now();
-            engine::perform_cycle();
+
+            engine::perform_cycle(&mut simulation);
             info!("{} ms", now.elapsed().as_millis());
 
             let response = Response::from_string("performed cycle").with_status_code(200);

@@ -6,33 +6,38 @@ use std::collections::HashSet;
 
 use crate::state::models::{Point, Block, Bounds};
 
-/*
+fn get_bounds_width(matrix: &Vec<Vec<u8>>) -> usize {
+    let mut minc = matrix.len();
+    let mut maxc = 0;
 
-[
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0],
-    [0, 1, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 0, 1, 1, 1, 1, 0],
-    [0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-]
-
-pos = [0, 0]
-
-for row in matrix {
-    for col in row {
-        if matrix[row][col] == 1 {
-            box = [
-                [col * size       ,        row * size]
-                [col * size + size,        row * size]
-                [col * size + size, row * size + size]
-                [col * size       , row * size + size]
-            ]
+    for row in 0..matrix.len() {
+        for col in 0..matrix[row].len() {
+            if matrix[row][col] == 1 && col < minc {
+                minc = col
+            }
+            if matrix[row][col] == 1 && col > maxc {
+                maxc = col
+            }
         }
     }
+
+    return (maxc - minc) + 1;
 }
-*/
+
+fn get_bounds_height(matrix: &Vec<Vec<u8>>) -> usize {
+    let mut height = 0;
+
+    for row in 0..matrix.len() {
+        for col in 0..matrix[row].len() {
+            if matrix[row][col] == 1 {
+                height += 1;
+                break;
+            }
+        }
+    }
+
+    return height;
+}
 
 fn create_placement_matrix(amount: usize) -> Vec<Vec<u8>> {
     let mut dims = amount * 2;
@@ -41,42 +46,15 @@ fn create_placement_matrix(amount: usize) -> Vec<Vec<u8>> {
     }
 
     let mut matrix: Vec<Vec<u8>> = Vec::with_capacity(dims);
-    for rows in 0..dims {
+    for _rows in 0..dims {
         let mut row: Vec<u8> = Vec::with_capacity(dims);
-        for cols in 0..dims {
+        for _cols in 0..dims {
             row.push(0);
         }
         matrix.push(row);
     }
 
     return matrix;
-}
-
-/// up    -> 0
-/// down  -> 1
-/// left  -> 2
-/// right -> 3
-fn get_direction_pool(last_direction: Option<usize>) -> Vec<usize> {
-    if last_direction.is_some() {
-        let mut directions = Vec::new();
-        let lastd = last_direction.unwrap();
-        for d in 0..4 {
-            if d == 0 && lastd == 1 {
-                continue;
-            } else if d == 1 && lastd == 0 {
-                continue;
-            } else if d == 2 && lastd == 3 {
-                continue;
-            } else if d == 3 && lastd == 2 {
-                continue;
-            }
-            directions.push(d);
-        }
-
-        return directions;
-    }
-
-    return vec![0, 1, 2, 3];
 }
 
 impl Point {
@@ -100,51 +78,6 @@ impl Block {
         );
     }
 
-    pub fn new(size: f32) -> Self {
-        return Block (
-            Point { x: 0.0, y: 0.0 },
-            Point { x: 0.0, y: size },
-            Point { x: size, y: size },
-            Point { x: size, y: 0.0 },
-        );
-    }
-
-    pub fn new_up(block: &Block, size: f32) -> Self {
-        return Block (
-            Point { x: block.0.x, y: block.0.y - size },
-            Point { x: block.1.x, y: block.1.y - size },
-            Point { x: block.2.x, y: block.2.y - size },
-            Point { x: block.3.x, y: block.3.y - size },
-        );
-    }
-
-    pub fn new_down(block: &Block, size: f32) -> Self {
-        return Block (
-            Point { x: block.0.x, y: block.0.y + size },
-            Point { x: block.1.x, y: block.1.y + size },
-            Point { x: block.2.x, y: block.2.y + size },
-            Point { x: block.3.x, y: block.3.y + size },
-        )
-    }
-
-    pub fn new_left(block: &Block, size: f32) -> Self {
-        return Block (
-            Point { x: block.0.x - size, y: block.0.y },
-            Point { x: block.1.x - size, y: block.1.y },
-            Point { x: block.2.x - size, y: block.2.y },
-            Point { x: block.3.x - size, y: block.3.y },
-        )
-    }
-
-    pub fn new_right(block: &Block, size: f32) -> Self {
-        return Block (
-            Point { x: block.0.x + size, y: block.0.y },
-            Point { x: block.1.x + size, y: block.1.y },
-            Point { x: block.2.x + size, y: block.2.y },
-            Point { x: block.3.x + size, y: block.3.y },
-        )
-    }
-
     pub fn to_verts(&self) -> Vec<Vec<f32>> {
         return vec![
             vec![self.0.x, self.0.y],
@@ -152,6 +85,29 @@ impl Block {
             vec![self.2.x, self.2.y],
             vec![self.3.x, self.3.y],
         ]
+    }
+
+    pub fn translate(&mut self, x: f32, y: f32, rotation: f32) -> Vec<Vec<f32>> {
+        let sin = rotation.sin(); let cos = rotation.cos();
+
+        let x0 = (self.0.x*cos - self.0.y*sin) + x;
+        let y0 = (self.0.x*sin + self.0.y*cos) + y;
+
+        let x1 = (self.1.x*cos - self.1.y*sin) + x;
+        let y1 = (self.1.x*sin + self.1.y*cos) + y;
+
+        let x2 = (self.2.x*cos - self.2.y*sin) + x;
+        let y2 = (self.2.x*sin + self.2.y*cos) + y;
+
+        let x3 = (self.3.x*cos - self.3.y*sin) + x;
+        let y3 = (self.3.x*sin + self.3.y*cos) + y;
+
+        return vec![
+            vec![x0, y0],
+            vec![x1, y1],
+            vec![x2, y2],
+            vec![x3, y3],
+        ];
     }
 }
 
@@ -184,58 +140,34 @@ pub fn random_bounds(size: f32, amount: usize) -> Bounds {
             _ => panic!("invalid random generated: {}", r)
         }
 
-        if (nrow < 0 || matrix.len() as isize <= nrow) || 
-        (ncol < 0 || matrix[nrow as usize].len() as isize <= ncol) {
-            continue;
-        } else if matrix[nrow as usize][ncol as usize] == 1 {
-            row = nrow as usize;
-            col = ncol as usize;
+        if (nrow < 0 || matrix.len() as isize <= nrow) || (ncol < 0 || matrix[nrow as usize].len() as isize <= ncol) {
             continue;
         }
 
-        let block = Block::from_coords(nrow as usize, ncol as usize, size);
+        let urow = nrow as usize;
+        let ucol = ncol as usize;
+        
+        if matrix[urow][ucol] == 1 {
+            row = urow;
+            col = ucol;
+            continue;
+        }
+
+        let block = Block::from_coords(ucol, urow, size);
         blocks.push(block);
 
-        matrix[nrow as usize][ncol as usize] = 1;
-        row = nrow as usize;
-        col = ncol as usize;
+        matrix[urow][ucol] = 1;
+        row = urow;
+        col = ucol;
         created += 1;
     }
-        
-    // for _ in 0..amount-2 {
-    //     let last_block = &blocks[blocks.len()-1];
 
-    //     let pool = get_direction_pool(last_direction);
-    //     let direction = range.gen_range(0, pool.len());
-        
-    //     match direction {
-    //         0 => {
-    //             blocks.push(Block::new_up(last_block, size));
-    //         }
-    //         1 => {
-    //             blocks.push(Block::new_down(last_block, size));
-    //         }
-    //         2 => {
-    //             blocks.push(Block::new_left(last_block, size));
-    //         }
-    //         3 => {
-    //             blocks.push(Block::new_right(last_block, size));
-    //         }
-    //         _ => panic!("invalid direction: {}", direction)
-    //     }
-
-    //     last_direction = Option::Some(direction);
-    // }
-
-    // let mut block_set: HashSet<Block> = HashSet::new();
-
-    // for block in blocks {
-    //     block_set.insert(block);
-    // }
-    
-    // println!("{} blocks generated", block_set.len());
+    let width = get_bounds_width(&matrix);
+    let height = get_bounds_height(&matrix);
 
     return Bounds {
-        blocks: blocks
+        blocks: blocks,
+        width: width,
+        height: height
     }
 }
