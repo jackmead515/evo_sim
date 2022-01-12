@@ -6,7 +6,7 @@ use crate::state::models::{Brain, Traits, Bounds, Creature, Constants};
 impl Creature {
 
 
-    pub fn new(creature_id: usize, constants: &Constants) -> Creature {
+    pub fn new(creature_id: u32, constants: &Constants) -> Creature {
         return Creature {
             creature_id: creature_id,
             brain: Brain::new(constants),

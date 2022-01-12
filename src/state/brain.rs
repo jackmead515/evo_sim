@@ -14,7 +14,7 @@ impl Neuron {
         }
 
         return Neuron {
-            activation: Activation::Sigmoid,
+            activation: 1,
             weights: weights,
             bias: range.gen_range(0.0f32, 1.0f32),
         }
@@ -33,8 +33,8 @@ impl Neuron {
         }
 
         total = match self.activation {
-            Activation::Sigmoid => { 1.0 / (1.0 + (-total).exp()) },
-            Activation::Softmax => {
+            1 => { 1.0 / (1.0 + (-total).exp()) },
+            _ => {
                 panic!("cannot use softmax");
             }
         };
@@ -48,22 +48,10 @@ impl Brain {
 
     pub fn new(constants: &Constants) -> Self {
         let mut brain = Brain {
-            hidden: Vec::with_capacity(constants.brain_size),
-            output: Vec::with_capacity(constants.output_size),
-            hidden_buffer: Vec::with_capacity(constants.brain_size),
-            output_buffer: Vec::with_capacity(constants.output_size),
-            activation: Activation::Softmax,
+            hidden: Vec::with_capacity(constants.brain_size as usize),
+            output: Vec::with_capacity(constants.output_size as usize),
+            activation: 2,
         };
-
-        for _ in 0..constants.brain_size {
-            brain.hidden.push(Neuron::random(constants.input_size as u8));
-            brain.hidden_buffer.push(0.0);
-        }
-
-        for _ in 0..constants.output_size {
-            brain.output.push(Neuron::random(constants.brain_size as u8));
-            brain.output_buffer.push(0.0);
-        }
 
         return brain;
     }
@@ -72,21 +60,24 @@ impl Brain {
         let hidden_size = self.hidden.len();
         let output_size = self.output.len();
 
+        let mut hidden_buffer = Vec::with_capacity(hidden_size);
+        let mut output_buffer = Vec::with_capacity(output_size);
+
         // compute inputs on hidden layer
         for i in 0..hidden_size {
-            self.hidden_buffer[i] = self.hidden[i].compute(inputs);
+            hidden_buffer.push(self.hidden[i].compute(inputs));
         }
 
         // compute output of hidden layer on output layer
         for i in 0..output_size {
-            self.output_buffer[i] = self.output[i].compute(&self.hidden_buffer);
+            output_buffer.push(self.output[i].compute(&hidden_buffer));
         }
 
         // Apply activation function on output layer
         return match self.activation {
-            Activation::Softmax => {
+            2 => {
                 let mut exps = Vec::with_capacity(output_size);
-                for output in self.output_buffer.iter() {
+                for output in output_buffer.iter() {
                     exps.push(output.exp());
                 }
 
@@ -94,7 +85,7 @@ impl Brain {
                 let mut max = 0.0;
                 let mut max_index: u8 = 0;
                 let mut outputs = Vec::with_capacity(output_size);
-                for i in 0..self.output_buffer.len() {
+                for i in 0..output_buffer.len() {
                     let output = exps[i] / sum;
                     if output > max {
                         max = output;
@@ -104,7 +95,7 @@ impl Brain {
                 }
                 return (outputs, max_index);
             },
-            Activation::Sigmoid => {
+            1 => {
                 panic!("cannot use sigmoid");
             },
             _ => (Vec::new(), 0),

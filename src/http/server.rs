@@ -2,6 +2,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 
+use prost::Message;
 use tiny_http::{Response, Server, Method};
 use std::time::{Instant};
 use log::{info};
@@ -54,10 +55,9 @@ pub fn start() {
             }
             info!("/perform-cycle {} ms", now.elapsed().as_millis());
 
-            let serialized_sim = serde_json::to_string(&simulation).unwrap();
-            info!("simulation size: {}", serialized_sim.len());
-
-            file.write_all(format!("{:?}\n", serialized_sim).as_bytes()).unwrap();
+            let serialized = simulation.encode_to_vec();
+            info!("simulation size: {}", serialized.len());
+            file.write_all(&serialized).unwrap();
 
         } else if matches!(method, Method::Put) && url == "/set-parameter" {
             info!("Request to set a parameter recieved");

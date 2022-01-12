@@ -19,10 +19,10 @@ message Point {
 }
 
 message Block {
-  required Point x0 = 1;
-  required Point y0 = 2;
-  required Point x1 = 3;
-  required Point y1 = 4;
+  required Point p1 = 1;
+  required Point p2 = 2;
+  required Point p3 = 3;
+  required Point p4 = 4;
 }
 
 message Bounds {
@@ -56,7 +56,7 @@ message Creature {
     required uint32 creature_id = 1;
     required Brain brain = 2;
     required Traits traits = 3;
-    optional Bounds bounds = 4;
+    required Bounds bounds = 4;
 }
 
 message CreatureState {

@@ -9,7 +9,7 @@ use crate::state::models::{Simulation, Cycle, Step, Constants, Creature};
 
 impl Simulation {
 
-    pub fn new(simulation_id: usize) -> Simulation {
+    pub fn new(simulation_id: u32) -> Simulation {
         return Simulation {
             simulation_id: simulation_id,
             cycles: Vec::new(),   
@@ -27,7 +27,7 @@ impl Simulation {
     }
 
     pub fn next_cycle(&mut self) -> Option<Cycle> {
-        if self.cycles.len() >= self.constants.max_cycles {
+        if self.cycles.len() >= self.constants.max_cycles as usize {
             return None;
         }
 
@@ -51,7 +51,7 @@ impl Cycle {
         };
 
         for creature_id in 0..constants.creature_amount {
-            let creature = Creature::new(creature_id, &constants);
+            let creature = Creature::new(creature_id as u32, &constants);
             cycle.creatures.insert(creature_id, creature);
         }
 
@@ -72,13 +72,13 @@ impl Cycle {
     }
 
     pub fn next_step(&self, constants: &Constants) -> Option<Step> {
-        if self.steps.len() >= constants.max_steps {
+        if self.steps.len() >= constants.max_steps as usize {
             return None;
         }
 
         if self.steps.len() >= 1 {
             let mut new_step = self.steps[self.steps.len()-1].clone();
-            new_step.step_id = self.steps.len();
+            new_step.step_id = self.steps.len() as u32;
             return Some(new_step);
         }
         

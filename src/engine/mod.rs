@@ -114,7 +114,7 @@ pub fn perform_cycle(simulation: &Simulation, cycle: &mut Cycle) {
         );
 
         for (_body_handle, body) in rigid_body_set.iter_mut() {
-          let creature_id = body.user_data as usize;
+          let creature_id = body.user_data as u32;
           let translation = body.translation();
           let rotation = body.rotation().angle();
 

@@ -1,97 +1,137 @@
-use std::collections::HashMap;
+//*
+///simulations
+///cycles
+///step
+///creatures
+///states
+///brains
+///neurons
+///traits
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Point(pub f32, pub f32);
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Block(pub Point, pub Point, pub Point, pub Point);
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Bounds {
-    pub blocks: Vec<Block>,
-    pub width: usize,
-    pub height: usize,
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Point {
+    #[prost(float, required, tag="1")]
+    pub x: f32,
+    #[prost(float, required, tag="2")]
+    pub y: f32,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Block {
+    #[prost(message, required, tag="1")]
+    pub p1: Point,
+    #[prost(message, required, tag="2")]
+    pub p2: Point,
+    #[prost(message, required, tag="3")]
+    pub p3: Point,
+    #[prost(message, required, tag="4")]
+    pub p4: Point,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Bounds {
+    #[prost(message, repeated, tag="1")]
+    pub blocks: ::prost::alloc::vec::Vec<Block>,
+    #[prost(uint32, required, tag="2")]
+    pub width: u32,
+    #[prost(uint32, required, tag="3")]
+    pub height: u32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Traits {
+    #[prost(float, required, tag="1")]
     pub restitution: f32,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum Activation {
-    Sigmoid,
-    Softmax
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Neuron {
+    #[prost(enumeration="Activation", required, tag="1")]
+    pub activation: i32,
+    #[prost(float, required, tag="2")]
     pub bias: f32,
-    pub weights: Vec<f32>,
-    pub activation: Activation,
+    #[prost(float, repeated, packed="false", tag="3")]
+    pub weights: ::prost::alloc::vec::Vec<f32>,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Brain {
-    pub hidden: Vec<Neuron>,
-    pub output: Vec<Neuron>,
-    pub activation: Activation,
-    pub output_buffer: Vec<f32>,
-    pub hidden_buffer: Vec<f32>,
+    #[prost(enumeration="Activation", required, tag="1")]
+    pub activation: i32,
+    #[prost(message, repeated, tag="2")]
+    pub hidden: ::prost::alloc::vec::Vec<Neuron>,
+    #[prost(message, repeated, tag="3")]
+    pub output: ::prost::alloc::vec::Vec<Neuron>,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Creature {
-    pub creature_id: usize,
+    #[prost(uint32, required, tag="1")]
+    pub creature_id: u32,
+    #[prost(message, required, tag="2")]
     pub brain: Brain,
+    #[prost(message, required, tag="3")]
     pub traits: Traits,
+    #[prost(message, required, tag="4")]
     pub bounds: Bounds,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreatureState {
-    pub creature_id: usize,
-    pub bounds: Bounds
+    #[prost(uint32, required, tag="1")]
+    pub creature_id: u32,
+    #[prost(message, required, tag="2")]
+    pub bounds: Bounds,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Wall {
-    pub bounds: Bounds
+    #[prost(message, required, tag="1")]
+    pub bounds: Bounds,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Step {
-    pub step_id: usize,
-    pub states: HashMap<usize, CreatureState>,
-    pub dynamic_walls: Vec<Wall>
+    #[prost(uint32, required, tag="1")]
+    pub step_id: u32,
+    #[prost(map="uint32, message", tag="2")]
+    pub states: ::std::collections::HashMap<u32, CreatureState>,
+    #[prost(message, repeated, tag="3")]
+    pub dynamic_walls: ::prost::alloc::vec::Vec<Wall>,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Cycle {
-    pub cycle_id: usize,
-    pub creatures: HashMap<usize, Creature>,
-    pub walls: Vec<Wall>,
-    pub steps: Vec<Step>
+    #[prost(uint32, required, tag="1")]
+    pub cycle_id: u32,
+    #[prost(map="uint32, message", tag="2")]
+    pub creatures: ::std::collections::HashMap<u32, Creature>,
+    #[prost(message, repeated, tag="3")]
+    pub walls: ::prost::alloc::vec::Vec<Wall>,
+    #[prost(message, repeated, tag="4")]
+    pub steps: ::prost::alloc::vec::Vec<Step>,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Constants {
-    pub max_cycles: usize,
-    pub max_steps: usize,
-    pub creature_amount: usize,
-    pub brain_size: usize,
-    pub input_size: usize,
-    pub output_size: usize,
-    pub block_amount: usize,
-    pub block_size: f32
+    #[prost(uint32, required, tag="1")]
+    pub max_cycles: u32,
+    #[prost(uint32, required, tag="2")]
+    pub max_steps: u32,
+    #[prost(uint32, required, tag="3")]
+    pub creature_amount: u32,
+    #[prost(uint32, required, tag="4")]
+    pub brain_size: u32,
+    #[prost(uint32, required, tag="5")]
+    pub input_size: u32,
+    #[prost(uint32, required, tag="6")]
+    pub output_size: u32,
+    #[prost(uint32, required, tag="7")]
+    pub block_amount: u32,
+    #[prost(float, required, tag="8")]
+    pub block_size: f32,
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Simulation {
-    pub simulation_id: usize,
+    #[prost(uint32, required, tag="1")]
+    pub simulation_id: u32,
+    #[prost(message, required, tag="2")]
     pub constants: Constants,
-    pub cycles: Vec<Cycle>
+    #[prost(message, repeated, tag="3")]
+    pub cycles: ::prost::alloc::vec::Vec<Cycle>,
 }
-
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+#[repr(i32)]
+pub enum Activation {
+    Sigmoid = 1,
+    Softmax = 2,
+}
