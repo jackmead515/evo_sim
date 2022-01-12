@@ -5,60 +5,96 @@ use rand::prelude::ThreadRng;
 use rand;
 use rapier2d::prelude::*;
 
-
-use crate::state::create;
-use crate::state::models::{Simulation, Cycle, Step, Brain, Traits};
+use crate::state::models::{Simulation, Cycle, Step, Constants, Creature};
 
 impl Simulation {
 
-    pub fn next_cycle(&mut self) -> Cycle {
-        if self.cycles.len() > 0 {
-            let last_cycle = &self.cycles[self.cycles.len() - 1];
+    pub fn new(simulation_id: usize) -> Simulation {
+        return Simulation {
+            simulation_id: simulation_id,
+            cycles: Vec::new(),   
+            constants: Constants {
+                max_cycles: 1000,
+                max_steps: 1000,
+                creature_amount: 10,
+                brain_size: 50,
+                input_size: 4,
+                output_size: 5,
+                block_amount: 10,
+                block_size: 5.0
+            }
+        };
+    }
+
+    pub fn next_cycle(&mut self) -> Option<Cycle> {
+        if self.cycles.len() >= self.constants.max_cycles {
+            return None;
         }
 
+        if self.cycles.len() >= 1 {
+            return Some(self.cycles[self.cycles.len()-1].evolve(&self.constants));
+        }
+
+        return Some(Cycle::new(&self.constants));
+    }
+
+}
+
+impl Cycle {
+
+    pub fn new(constants: &Constants) -> Cycle {
         let mut cycle = Cycle {
             cycle_id: 0,
-            brain_map: HashMap::new(),
-            trait_map: HashMap::new(),
+            creatures: HashMap::new(),
             walls: Vec::new(),
             steps: Vec::new()
         };
 
-        for id in 0..self.constants.creature_amount - 1 {
-            let brain = Brain::new_random(id, self.constants.brain_size, self.constants.input_size, self.constants.output_size);
-            let traits = Traits {
-                color: [255, 0, 0, 1],
-                creature_id: id
-            };
-
-            cycle.brain_map.insert(id, brain);
-            cycle.trait_map.insert(id, traits);
+        for creature_id in 0..constants.creature_amount {
+            let creature = Creature::new(creature_id, &constants);
+            cycle.creatures.insert(creature_id, creature);
         }
 
         return cycle;
     }
 
-    pub fn next_step(&mut self, id: usize) -> (Step, Vec<(RigidBody, Collider)>) {
-        let mut step = Step {
-            step_id: id,
-            creatures: Vec::new(),
-            dynamic_walls: Vec::new()
-        };
+    pub fn evolve(&self, constants: &Constants) -> Cycle {
+        let mut new_cycle = self.clone();
 
-        let mut bodies: Vec<(RigidBody, Collider)> = Vec::new();
+        new_cycle.cycle_id += 1;
+        new_cycle.steps = Vec::new();
 
-        for id in 0..self.constants.creature_amount - 1 {
-            let (creature, body, collider) = create::creature(id, self.constants.block_amount, self.constants.block_size);
-            step.creatures.push(creature);
-            bodies.push((body, collider));
+        for (creature_id, creature) in new_cycle.creatures.iter_mut() {
+            *creature = creature.evolve(constants);
         }
 
-        return (step, bodies);
+        return new_cycle;
     }
 
-    pub fn last_cycle(&mut self) -> &mut Cycle {
-        let index = self.cycles.len() - 1;
-        return &mut self.cycles[index];
+    pub fn next_step(&self, constants: &Constants) -> Option<Step> {
+        if self.steps.len() >= constants.max_steps {
+            return None;
+        }
+
+        if self.steps.len() >= 1 {
+            let mut new_step = self.steps[self.steps.len()-1].clone();
+            new_step.step_id = self.steps.len();
+            return Some(new_step);
+        }
+        
+        return Some(Step::new());
+    }
+
+}
+
+impl Step {
+
+    pub fn new() -> Step {
+        return Step {
+            step_id: 0,
+            states: HashMap::new(),
+            dynamic_walls: Vec::new()
+        };
     }
 
 }

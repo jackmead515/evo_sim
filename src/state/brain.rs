@@ -1,11 +1,11 @@
 use rand::Rng;
 use rand;
 
-use crate::state::models::{Brain, Neuron, Activation};
+use crate::state::models::{Brain, Neuron, Activation, Constants};
 
 impl Neuron {
 
-    pub fn random(id: u8, weight_size: u8) -> Self {
+    pub fn random(weight_size: u8) -> Self {
         let mut weights = Vec::new();
         let mut range = rand::thread_rng();
 
@@ -46,23 +46,22 @@ impl Neuron {
 
 impl Brain {
 
-    pub fn new_random(id: usize, brain_size: usize, input_size: usize, output_size: usize) -> Self {
+    pub fn new(constants: &Constants) -> Self {
         let mut brain = Brain {
-            creature_id: id,
-            hidden: Vec::with_capacity(brain_size as usize),
-            output: Vec::with_capacity(output_size as usize),
-            hidden_buffer: Vec::with_capacity(brain_size as usize),
-            output_buffer: Vec::with_capacity(output_size as usize),
+            hidden: Vec::with_capacity(constants.brain_size),
+            output: Vec::with_capacity(constants.output_size),
+            hidden_buffer: Vec::with_capacity(constants.brain_size),
+            output_buffer: Vec::with_capacity(constants.output_size),
             activation: Activation::Softmax,
         };
 
-        for id in 0..brain_size {
-            brain.hidden.push(Neuron::random(id as u8, input_size as u8));
+        for _ in 0..constants.brain_size {
+            brain.hidden.push(Neuron::random(constants.input_size as u8));
             brain.hidden_buffer.push(0.0);
         }
 
-        for id in 0..output_size {
-            brain.output.push(Neuron::random(id as u8, brain_size as u8));
+        for _ in 0..constants.output_size {
+            brain.output.push(Neuron::random(constants.brain_size as u8));
             brain.output_buffer.push(0.0);
         }
 
@@ -111,5 +110,11 @@ impl Brain {
             _ => (Vec::new(), 0),
         };
     }
+
+    pub fn evolve(&self, constants: &Constants) -> Brain {
+        let new_brain = self.clone();
+
+        return new_brain;
+    } 
 
 }

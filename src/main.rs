@@ -1,6 +1,8 @@
 extern crate tiny_http;
 extern crate env_logger;
 extern crate prost_build;
+extern crate serde;
+extern crate serde_json;
 
 use std::env;
 

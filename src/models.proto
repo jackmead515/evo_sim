@@ -13,8 +13,26 @@ package models;
         /traits
 */
 
+message Point {
+  required float x = 1;
+  required float y = 2;
+}
+
+message Block {
+  required Point x0 = 1;
+  required Point y0 = 2;
+  required Point x1 = 3;
+  required Point y1 = 4;
+}
+
+message Bounds {
+  repeated Block blocks = 1;
+  required uint32 width = 2;
+  required uint32 height = 3;
+}
+
 message Traits {
-  required uint32 id = 1;
+  required float restitution = 1;
 }
 
 enum Activation {
@@ -24,8 +42,8 @@ enum Activation {
 
 message Neuron {
   required Activation activation = 1;
-  required double bias = 2;
-  repeated double weights = 3;
+  required float bias = 2;
+  repeated float weights = 3;
 }
 
 message Brain {
@@ -34,39 +52,48 @@ message Brain {
   repeated Neuron output = 3;
 }
 
-message State {
-  required uint32 id = 1;
-}
-
-message Vertex {
-  repeated double points = 1;
-}
-
-message Hull {
-  repeated Vertex verticies = 1;
-}
-
 message Creature {
-    required uint32 id = 1;
-    required Hull hull = 2;
+    required uint32 creature_id = 1;
+    required Brain brain = 2;
     required Traits traits = 3;
-    required Brain brain = 4;
-    optional State state = 5;
+    optional Bounds bounds = 4;
+}
+
+message CreatureState {
+  required uint32 creature_id = 1;
+  required Bounds bounds = 2;
+}
+
+message Wall {
+  required Bounds bounds = 1;
 }
 
 message Step {
-  required uint32 id = 1;
-  required uint32 simulationId = 2;
-  map<uint32, Creature> creatures = 3;
+  required uint32 step_id = 1;
+  map<uint32, CreatureState> states = 2;
+  repeated Wall dynamic_walls = 3;
 }
 
 message Cycle {
-  required uint32 id = 1;
-  required uint32 simulationId = 2;
-  repeated uint32 stepIds = 3;
+  required uint32 cycle_id = 1;
+  map<uint32, Creature> creatures = 2;
+  repeated Wall walls = 3;
+  repeated Step steps = 4;
+}
+
+message Constants {
+  required uint32 max_cycles = 1;
+  required uint32 max_steps = 2;
+  required uint32 creature_amount = 3;
+  required uint32 brain_size = 4;
+  required uint32 input_size = 5;
+  required uint32 output_size = 6;
+  required uint32 block_amount = 7;
+  required float block_size = 8;
 }
 
 message Simulation {
-  required uint32 id = 1;
-  repeated uint32 cycleIds = 2;
+  required uint32 simulation_id = 1;
+  required Constants constants = 2;
+  repeated Cycle cycles = 3;
 }
