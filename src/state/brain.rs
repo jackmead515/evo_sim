@@ -1,7 +1,15 @@
+use std::thread::{JoinHandle};
+use std::sync::{Arc, Mutex};
+use std::sync::mpsc::channel;
+use std::collections::HashMap;
+use std::thread;
+
 use rand::Rng;
 use rand;
 
-use crate::state::models::{Brain, Neuron, Activation, Constants};
+
+use crate::state::models::{Brain, Neuron, Activation, Creature};
+use crate::state::simulation::Constants;
 
 impl Neuron {
 
@@ -47,16 +55,14 @@ impl Neuron {
 impl Brain {
 
     pub fn new(constants: &Constants) -> Self {
-        let mut brain = Brain {
+        return Brain {
             hidden: Vec::with_capacity(constants.brain_size as usize),
             output: Vec::with_capacity(constants.output_size as usize),
             activation: 2,
         };
-
-        return brain;
     }
     
-    pub fn compute(&mut self, inputs: &Vec<f32>) -> (Vec<f32>, u8) {
+    pub fn compute(&self, inputs: &Vec<f32>) -> (Vec<f32>, u8) {
         let hidden_size = self.hidden.len();
         let output_size = self.output.len();
 
@@ -109,3 +115,40 @@ impl Brain {
     } 
 
 }
+
+// pub fn compute(
+//     creature_map: Arc<Mutex<HashMap<u32, Creature>>>,
+//     decision_map: Arc<Mutex<HashMap<u32, u8>>>,
+// ) -> JoinHandle<()> {
+//     let creature_map = creature_map.clone();
+//     let decision_map = decision_map.clone();
+//     return thread::spawn(move || {
+
+//         let (sender, receiver) = channel();
+
+//         for _ in 0..8 {
+//             let decision_map = decision_map.clone();
+//             let handle = thread::spawn(move || {
+//                 let (_outputs, decision) = ccreature.brain.compute(&vec![0.1, 0.2, 0.3, 0.4, 0.5]);
+                
+//                 match decision_map.lock() {
+//                     Ok(mut map) => {
+//                         map.insert(creature_id, decision);
+//                     },
+//                     Err(_) => {},
+//                 };
+//             });
+//             handles.push(handle);
+//         }
+
+//         match creature_map.lock() {
+//             Ok(map) => {
+//                 for (creature_id, creature) in map.iter() {
+                    
+//                 }
+//             }
+//         }
+
+        
+//     }); 
+// }

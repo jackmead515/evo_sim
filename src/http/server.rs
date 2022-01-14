@@ -1,21 +1,22 @@
 
-use std::fs::File;
+use std::fs;
 use std::io::prelude::*;
 
 use prost::Message;
+use flate2::Compression;
+use flate2::write::ZlibEncoder;
 use tiny_http::{Response, Server, Method};
 use std::time::{Instant};
 use log::{info};
 
 use crate::engine;
-use crate::state;
-use crate::state::models::{Simulation};
+use crate::state::simulation::Simulation;
 
 pub fn handle_perform_cycle(simulation: &mut Simulation) -> Result<(), String> {
     match simulation.next_cycle() {
         Some(mut cycle) => {
             engine::perform_cycle(&simulation, &mut cycle);
-            simulation.cycles.push(cycle);
+            simulation.current_cycle = Some(cycle);
             return Ok(());
         },
         None => {
@@ -29,7 +30,9 @@ pub fn start() {
 
     let mut simulation = Simulation::new(1);
 
-    let mut file = File::create("./simulation.txt").unwrap();
+    let sim_folder_name = format!("./simulations/sim_{}", simulation.simulation_id);
+
+    fs::create_dir_all(&sim_folder_name[..]).expect("Failed to create simulation directory");
 
     let server = Server::http("0.0.0.0:8000").unwrap();
 
@@ -42,6 +45,7 @@ pub fn start() {
         if matches!(method, Method::Post) && url == "/perform-cycle" {
             info!("Request to perform a cycle recieved");
             
+            // perform the cycle and respond to the user.
             let now = Instant::now();
             match handle_perform_cycle(&mut simulation) {
                 Ok(_) => {
@@ -53,11 +57,23 @@ pub fn start() {
                     request.respond(response).ok();
                 }
             }
-            info!("/perform-cycle {} ms", now.elapsed().as_millis());
 
-            let serialized = simulation.encode_to_vec();
-            info!("simulation size: {}", serialized.len());
-            file.write_all(&serialized).unwrap();
+            // save the simulation cycle to disk
+            match &simulation.current_cycle {
+                Some(cycle) => {
+                    let mut serialized = cycle.encode_to_vec();
+                    info!("full cycle {} size: {}", cycle.cycle_id, serialized.len());
+                    let mut compressor = ZlibEncoder::new(Vec::new(), Compression::default());
+                    compressor.write_all(&serialized).unwrap();
+                    serialized = compressor.finish().unwrap();
+                    info!("compressed cycle {} size: {}", cycle.cycle_id, serialized.len());
+                    let file_name = format!("{}/cycle_{}.zip", &sim_folder_name[..], cycle.cycle_id);
+                    let mut file = fs::File::create(file_name).expect(&format!("Failed to create cycle file {}", cycle.cycle_id)[..]);
+                    file.write_all(&serialized).expect(&format!("Failed to write cycle data {}", cycle.cycle_id)[..]);
+                },
+                None => {}
+            };
+            info!("/perform-cycle {} ms", now.elapsed().as_millis());
 
         } else if matches!(method, Method::Put) && url == "/set-parameter" {
             info!("Request to set a parameter recieved");

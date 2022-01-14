@@ -3,54 +3,31 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::time::{Instant};
 use std::collections::HashMap;
+use std::thread;
+use std::thread::{JoinHandle};
+use std::sync::{Arc, Mutex};
+use std::sync::mpsc::channel;
 
 use rand::Rng;
 use rand;
 use rapier2d::prelude::*;
 use log::{info};
 
-use crate::state::models::{Simulation, Cycle, Step, CreatureState};
+use crate::state::models::{Cycle, CreatureState, Point};
+use crate::state::simulation::Simulation;
 
 pub mod create;
 
 pub fn perform_cycle(simulation: &Simulation, cycle: &mut Cycle) {
-  // let max_steps = 1000;
-
-  // for step in 0..max_steps {
-  //   for creature in creatures {
-  //     let decisions = creature.decide();
-  //     creature.update_physics(decisions);
-  //   }
-
-  //   physics.step();
-  //   creature.update_state();
-  //   save_cycle_step();
-  //   evolve();
-  // }
-
-  // let world_width = 1000.0;
-  // let world_height = 1000.0;
 
   let mut range = rand::thread_rng();
-
   let mut rigid_body_set = RigidBodySet::new();
   let mut collider_set = ColliderSet::new();
 
-  for (body, collider) in create::world_colliders() {
+  for (body, collider) in create::world_colliders(&simulation.constants) {
     let body_handle = rigid_body_set.insert(body);
     collider_set.insert_with_parent(collider, body_handle, &mut rigid_body_set);
   }
-
-  // let (mut step, bodies) = simulation.next_step();
-
-  // let mut i = 0;
-  // for (mut body, collider) in bodies {
-  //   i += 1;
-  //   body.set_translation(vector![(i as f32 * 50.0), WORLD_HEIGHT / 2.0], true);
-  //   body.set_linvel(vector![range.gen_range(-50.0, 50.0), range.gen_range(-50.0, 50.0)], true);
-  //   let body_handle = rigid_body_set.insert(body);
-  //   collider_set.insert_with_parent(collider, body_handle, &mut rigid_body_set);
-  // }
   
   let gravity = vector![0.0, 0.0];
   let mut integration_parameters = IntegrationParameters::default();
@@ -66,11 +43,7 @@ pub fn perform_cycle(simulation: &Simulation, cycle: &mut Cycle) {
   let physics_hooks = ();
   let event_handler = ();
 
-  //let mut file = File::create("./cycle.txt").unwrap();
-
   info!("Starting physics pipeline");
-
-  let mut steps: Vec<Step> = Vec::new();
 
   loop {
     let now = Instant::now();
@@ -78,12 +51,14 @@ pub fn perform_cycle(simulation: &Simulation, cycle: &mut Cycle) {
       Some(mut step) => {
 
         if step.step_id == 0 {
-          for (creature_id, creature) in cycle.creatures.iter() {
+          for (creature_id, mut creature) in cycle.creatures.iter_mut() {
             let (mut body, mut collider) = create::dynamic_body(simulation.constants.block_size, &creature.bounds);
         
             body.user_data = *creature_id as u128;
             collider.user_data = *creature_id as u128;
             collider.set_restitution(creature.traits.restitution);
+            collider.set_friction(creature.traits.friction);
+            creature.traits.mass = body.mass();
 
             let translation = (range.gen_range(50.0, 550.0), range.gen_range(50.0, 550.0));
 
@@ -94,7 +69,10 @@ pub fn perform_cycle(simulation: &Simulation, cycle: &mut Cycle) {
 
             step.states.insert(*creature_id, CreatureState {
               creature_id: *creature_id,
-              bounds: creature.bounds.translate(translation.0, translation.1, 0.0),
+              translation: Point { x: translation.0, y: translation.1 },
+              stamina: creature.traits.stamina,
+              rotation: 0.0,
+              decision: 0,
             });
           }
         }
@@ -121,18 +99,37 @@ pub fn perform_cycle(simulation: &Simulation, cycle: &mut Cycle) {
           let creature = cycle.creatures.get_mut(&creature_id).unwrap();
 
           let creature_state = step.states.get_mut(&creature_id).unwrap();
-          creature_state.bounds = creature.bounds.translate(translation.x, translation.y, rotation);;
+          creature_state.translation = Point { x: translation.x, y: translation.y };
+          creature_state.rotation = rotation;
 
-          let (_outputs, decision) = creature.brain.compute(&vec![0.1, 0.2, 0.3, 0.4, 0.5]);
+          let (_outputs, decision) = creature.brain.compute(&vec![
+            creature_state.translation.x,
+            creature_state.translation.y,
+            creature_state.rotation,
+            creature_state.stamina,
+            0.0
+          ]);
 
-          if decision == 0 {
-            body.apply_force(vector![0.0, -1.0], true);
-          } else if decision == 1 {
-            body.apply_force(vector![0.0, 1.0], true);
-          } else if decision == 2 {
-            body.apply_force(vector![-1.0, 0.0], true);
-          } else if decision == 3 {
-            body.apply_force(vector![1.0, 0.0], true);
+          let net_speed = creature.traits.get_net_speed();
+          let stamina_factor = creature.traits.get_stamina_factor();
+
+          if decision == 0 && creature_state.stamina > stamina_factor {
+            body.apply_force(vector![0.0, -net_speed], true);
+            creature_state.stamina -= stamina_factor;
+          } else if decision == 1 && creature_state.stamina > stamina_factor {
+            body.apply_force(vector![0.0, net_speed], true);
+            creature_state.stamina -= stamina_factor;
+          } else if decision == 2 && creature_state.stamina > stamina_factor {
+            body.apply_force(vector![-net_speed, 0.0], true);
+            creature_state.stamina -= stamina_factor;
+          } else if decision == 3 && creature_state.stamina > stamina_factor {
+            body.apply_force(vector![net_speed, 0.0], true);
+            creature_state.stamina -= stamina_factor;
+          }
+
+          if creature_id == 5 {
+            print!("{:?}", creature_state);
+            println!("\t{}, {}", net_speed, stamina_factor);
           }
         }
 

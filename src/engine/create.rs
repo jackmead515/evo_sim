@@ -7,16 +7,14 @@ use rapier2d::math::Point;
 use log::{info};
 
 use crate::state::models::*;
+use crate::state::simulation::Constants;
 
-pub static WORLD_WIDTH: f32 = 600.0;
-pub static WORLD_HEIGHT: f32 = 600.0;
-
-pub fn world_colliders() -> Vec<(RigidBody, Collider)> {
+pub fn world_colliders(constants: &Constants) -> Vec<(RigidBody, Collider)> {
   let path = vec![
     Point::new(0.0, 0.0),
-    Point::new(0.0, WORLD_HEIGHT),
-    Point::new(WORLD_WIDTH, WORLD_HEIGHT),
-    Point::new(WORLD_WIDTH, 0.0),
+    Point::new(0.0, constants.world_height as f32),
+    Point::new(constants.world_width as f32, constants.world_height as f32),
+    Point::new(constants.world_width as f32, 0.0),
     Point::new(0.0, 0.0)
   ];
 
@@ -56,7 +54,7 @@ pub fn dynamic_body(block_size: f32, bounds: &Bounds) -> (RigidBody, Collider) {
     let mut shapes = Vec::new();
     for block in bounds.blocks.iter() {
         shapes.push((
-            Isometry::new(vector![block.p1.x, block.p1.y], 0.0),
+            Isometry::new(vector![block.position.x, block.position.y], 0.0),
             SharedShape::cuboid(half_size, half_size)
         ));
     }

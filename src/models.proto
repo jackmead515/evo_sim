@@ -19,10 +19,9 @@ message Point {
 }
 
 message Block {
-  required Point p1 = 1;
-  required Point p2 = 2;
-  required Point p3 = 3;
-  required Point p4 = 4;
+  required Point position = 1;
+  required float width = 2;
+  required float height = 3;
 }
 
 message Bounds {
@@ -33,6 +32,10 @@ message Bounds {
 
 message Traits {
   required float restitution = 1;
+  required float friction = 2;
+  required float stamina = 3;
+  required float mass = 4;
+  required float strength = 5;
 }
 
 enum Activation {
@@ -61,7 +64,10 @@ message Creature {
 
 message CreatureState {
   required uint32 creature_id = 1;
-  required Bounds bounds = 2;
+  required Point translation = 2;
+  required float rotation = 3;
+  required float stamina = 4;
+  required uint32 decision = 5;
 }
 
 message Wall {
@@ -90,10 +96,4 @@ message Constants {
   required uint32 output_size = 6;
   required uint32 block_amount = 7;
   required float block_size = 8;
-}
-
-message Simulation {
-  required uint32 simulation_id = 1;
-  required Constants constants = 2;
-  repeated Cycle cycles = 3;
 }

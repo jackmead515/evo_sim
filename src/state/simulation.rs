@@ -5,18 +5,41 @@ use rand::prelude::ThreadRng;
 use rand;
 use rapier2d::prelude::*;
 
-use crate::state::models::{Simulation, Cycle, Step, Constants, Creature};
+use crate::state::models::{Cycle, Step, Creature};
+
+pub struct Constants {
+    pub world_width: u32,
+    pub world_height: u32,
+    pub max_cycles: u32,
+    pub max_steps: u32,
+    pub creature_amount: u32,
+    pub brain_size: u32,
+    pub input_size: u32,
+    pub output_size: u32,
+    pub block_amount: u32,
+    pub block_size: f32,
+}
+
+pub struct Simulation {
+    pub simulation_id: u32,
+    pub constants: Constants,
+    pub computed_cycles: u32,
+    pub current_cycle: Option<Cycle>,
+}
 
 impl Simulation {
 
     pub fn new(simulation_id: u32) -> Simulation {
         return Simulation {
             simulation_id: simulation_id,
-            cycles: Vec::new(),   
+            computed_cycles: 0,
+            current_cycle: None,
             constants: Constants {
+                world_width: 1000,
+                world_height: 1000,
                 max_cycles: 1000,
                 max_steps: 1000,
-                creature_amount: 10,
+                creature_amount: 100,
                 brain_size: 50,
                 input_size: 4,
                 output_size: 5,
@@ -27,15 +50,18 @@ impl Simulation {
     }
 
     pub fn next_cycle(&mut self) -> Option<Cycle> {
-        if self.cycles.len() >= self.constants.max_cycles as usize {
+        if self.computed_cycles >= self.constants.max_cycles {
             return None;
         }
 
-        if self.cycles.len() >= 1 {
-            return Some(self.cycles[self.cycles.len()-1].evolve(&self.constants));
-        }
-
-        return Some(Cycle::new(&self.constants));
+        match &self.current_cycle {
+            Some(cycle) => {
+                return Some(cycle.evolve(&self.constants));
+            },
+            None => {
+                return Some(Cycle::new(&self.constants));
+            }
+        };
     }
 
 }

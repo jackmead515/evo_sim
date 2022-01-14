@@ -1,7 +1,8 @@
 use rand::Rng;
 use rand;
 
-use crate::state::models::{Brain, Traits, Bounds, Creature, Constants};
+use crate::state::models::{Brain, Traits, Bounds, Creature};
+use crate::state::simulation::Constants;
 
 impl Creature {
 

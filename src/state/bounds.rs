@@ -4,7 +4,8 @@ use rand;
 
 use std::collections::HashSet;
 
-use crate::state::models::{Point, Block, Bounds, Constants};
+use crate::state::models::{Point, Block, Bounds};
+use crate::state::simulation::Constants;
 
 fn get_bounds_width(matrix: &Vec<Vec<u8>>) -> usize {
     let mut minc = matrix.len();
@@ -66,43 +67,40 @@ impl Point {
 impl Block {
 
     pub fn from_coords(x: usize, y: usize, size: f32) -> Self {
-        let nx = x as f32 * size;
-        let ny = y as f32 * size;
-        let nys = ny + size;
-        let nxs = nx + size;
+        // let nx = x as f32 * size;
+        // let ny = y as f32 * size;
 
         return Block {
-            p1: Point { x: nx, y: ny },
-            p2: Point { x: nx, y: nys },
-            p3: Point { x: nxs, y: nys },
-            p4: Point { x: nxs, y: ny }
+            position: Point { x: x as f32, y: y as f32 },
+            width: size,
+            height: size,
         };
     }
 
-    /// Translates this block by the x and y and by the radian rotation
-    /// and returns a new Block with the updated position
-    pub fn translate(&mut self, x: f32, y: f32, rotation: f32) -> Block {
-        let sin = rotation.sin(); let cos = rotation.cos();
+    // Translates this block by the x and y and by the radian rotation
+    // and returns a new Block with the updated position
+    // pub fn translate(&mut self, x: f32, y: f32, rotation: f32) -> Block {
+    //     let sin = rotation.sin(); let cos = rotation.cos();
 
-        let x0 = (self.p1.x*cos - self.p1.y*sin) + x;
-        let y0 = (self.p1.x*sin + self.p1.y*cos) + y;
+    //     let x0 = (self.p1.x*cos - self.p1.y*sin) + x;
+    //     let y0 = (self.p1.x*sin + self.p1.y*cos) + y;
 
-        let x1 = (self.p2.x*cos - self.p2.y*sin) + x;
-        let y1 = (self.p2.x*sin + self.p2.y*cos) + y;
+    //     let x1 = (self.p2.x*cos - self.p2.y*sin) + x;
+    //     let y1 = (self.p2.x*sin + self.p2.y*cos) + y;
 
-        let x2 = (self.p3.x*cos - self.p3.y*sin) + x;
-        let y2 = (self.p3.x*sin + self.p3.y*cos) + y;
+    //     let x2 = (self.p3.x*cos - self.p3.y*sin) + x;
+    //     let y2 = (self.p3.x*sin + self.p3.y*cos) + y;
 
-        let x3 = (self.p4.x*cos - self.p4.y*sin) + x;
-        let y3 = (self.p4.x*sin + self.p4.y*cos) + y;
+    //     let x3 = (self.p4.x*cos - self.p4.y*sin) + x;
+    //     let y3 = (self.p4.x*sin + self.p4.y*cos) + y;
 
-        return Block {
-            p1: Point { x: x0, y: y0 },
-            p2: Point { x: x1, y: y1 },
-            p3: Point { x: x2, y: y2 },
-            p4: Point { x: x3, y: y3 }
-        };
-    }
+    //     return Block {
+    //         p1: Point { x: x0, y: y0 },
+    //         p2: Point { x: x1, y: y1 },
+    //         p3: Point { x: x2, y: y2 },
+    //         p4: Point { x: x3, y: y3 }
+    //     };
+    // }
 }
 
 impl Bounds {
@@ -174,16 +172,16 @@ impl Bounds {
         return new_bounds;
     }
 
-    /// Translates this block by the x and y and by the radian rotation
-    /// and returns a new Block with the updated position
-    pub fn translate(&self, x: f32, y: f32, rotation: f32) -> Bounds {
-        let mut new_bounds = self.clone();
+    // Translates this block by the x and y and by the radian rotation
+    // and returns a new Block with the updated position
+    // pub fn translate(&self, x: f32, y: f32, rotation: f32) -> Bounds {
+    //     let mut new_bounds = self.clone();
 
-        for block in new_bounds.blocks.iter_mut() {
-            *block = block.translate(x, y, rotation);
-        }
+    //     for block in new_bounds.blocks.iter_mut() {
+    //         *block = block.translate(x, y, rotation);
+    //     }
 
-        return new_bounds;
-    }
+    //     return new_bounds;
+    // }
 
 }
