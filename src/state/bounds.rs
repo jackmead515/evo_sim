@@ -7,57 +7,6 @@ use std::collections::{HashSet, HashMap};
 use crate::state::models::{Point, Block, Bounds};
 use crate::state::simulation::Constants;
 
-fn get_bounds_width(matrix: &Vec<Vec<u8>>) -> usize {
-    let mut minc = matrix.len();
-    let mut maxc = 0;
-
-    for row in 0..matrix.len() {
-        for col in 0..matrix[row].len() {
-            if matrix[row][col] == 1 && col < minc {
-                minc = col
-            }
-            if matrix[row][col] == 1 && col > maxc {
-                maxc = col
-            }
-        }
-    }
-
-    return (maxc - minc) + 1;
-}
-
-fn get_bounds_height(matrix: &Vec<Vec<u8>>) -> usize {
-    let mut height = 0;
-
-    for row in 0..matrix.len() {
-        for col in 0..matrix[row].len() {
-            if matrix[row][col] == 1 {
-                height += 1;
-                break;
-            }
-        }
-    }
-
-    return height;
-}
-
-fn create_placement_matrix(amount: u32) -> Vec<Vec<u8>> {
-    let mut dims = (amount * 2) as usize;
-    if dims % 2 == 0 {
-        dims += 1;
-    }
-
-    let mut matrix: Vec<Vec<u8>> = Vec::with_capacity(dims);
-    for _rows in 0..dims {
-        let mut row: Vec<u8> = Vec::with_capacity(dims);
-        for _cols in 0..dims {
-            row.push(0);
-        }
-        matrix.push(row);
-    }
-
-    return matrix;
-}
-
 impl Point {
     pub fn new(x: f32, y: f32) -> Self {
         return Point { x: x, y: y };
@@ -111,6 +60,10 @@ impl Bounds {
         let mut used_map: HashMap<String, Coordinate> = HashMap::new();
         let mut avaliable = Vec::new();
         
+        // start the selection at 0,0 and add
+        // left, right, up, and down to avaliable
+        // array. Initialized the map of used
+        // coordinates with 0,0
         let node = Coordinate::new(0, 0);
         avaliable.push(node.upper_coordinate());
         avaliable.push(node.lower_coordinate());
@@ -122,8 +75,15 @@ impl Bounds {
         let mut smallest_y: isize = 0;
 
         for _ in 1..constants.block_amount {
+
+            // randomly select an avaliable rect to add.
             let r = range.gen_range(0, avaliable.len()-1);
+
+            // swap_remove, O(1) time
             let node = avaliable.swap_remove(r);
+
+            // these are the next nodes to add to the avaliable
+            // map. But they could already be used!
             let next_nodes = vec![
                 node.upper_coordinate(),
                 node.lower_coordinate(),
@@ -133,6 +93,8 @@ impl Bounds {
 
             used_map.insert(node.key(), node);
 
+            // loop through and determine the smallest x and y
+            // and add nodes to the avaliable set.
             for next_node in next_nodes {
                 if !used_map.contains_key(&next_node.key()) {
                     if next_node.x < smallest_x {
@@ -150,6 +112,9 @@ impl Bounds {
         let mut width: u32 = 0;
         let mut height: u32 = 0;
 
+        // normalize all the nodes back to the origin.
+        // some coordinates could be negative and we
+        // can't have that.
         for node in used_map.values_mut() {
             node.x += smallest_x.abs();
             node.y += smallest_y.abs();

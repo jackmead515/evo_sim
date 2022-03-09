@@ -10,7 +10,7 @@ impl Traits {
         return Traits {
             restitution: 0.3,
             friction: 0.2,
-            stamina: 1000.0,
+            stamina: 100.0,
             block_mass: 5.0,
             block_amount: constants.block_amount,
             strength: 100.0,

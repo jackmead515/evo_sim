@@ -25,8 +25,17 @@ fn normalize(inputs: &mut Vec<f32>) {
         }
     }
 
+    // prevent divide by zero affect.
+    // can only happen if all inputs are 0!
+    // max and min will never be negative
+    // either
+    let bottom = max - min;
+    if bottom == 0.0 {
+        return;
+    }
+
     for i in inputs.iter_mut() {
-        *i = (*i - min) / (max - min);
+        *i = (*i - min) / bottom;
     }
 }
 
@@ -61,6 +70,7 @@ impl Neuron {
 
         total = match self.activation {
             1 => {
+                // sigmoid activation
                 1.0 / (1.0 + (-total).exp())
             },
             _ => {
@@ -119,8 +129,13 @@ impl Brain {
         // Apply activation function on output layer
         return match self.activation {
             2 => {
+                // softmax activation
                 let mut exps = Vec::with_capacity(output_size);
                 let mut exp_sum = 0.0;
+
+                // compute the natural exponential
+                // and the sum of the exponentials
+                // at the same time
                 for output in output_buffer.iter() {
                     let exp = output.exp();
                     exp_sum += exp;
@@ -131,7 +146,10 @@ impl Brain {
                 let mut max_index: u8 = 0;
                 let mut outputs = Vec::with_capacity(output_size);
                 for i in 0..output_buffer.len() {
+                    // output of softmax is = exp / sum(exp)
                     let output = exps[i] / exp_sum;
+
+                    // max decision based on max value
                     if output > max {
                         max = output;
                         max_index = i as u8;
