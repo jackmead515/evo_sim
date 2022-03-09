@@ -34,8 +34,9 @@ message Traits {
   required float restitution = 1;
   required float friction = 2;
   required float stamina = 3;
-  required float mass = 4;
-  required float strength = 5;
+  required float block_mass = 4;
+  required uint32 block_amount = 5;
+  required float strength = 6;
 }
 
 enum Activation {

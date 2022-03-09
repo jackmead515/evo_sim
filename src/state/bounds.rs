@@ -2,7 +2,7 @@ use rand::Rng;
 use rand::prelude::ThreadRng;
 use rand;
 
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 
 use crate::state::models::{Point, Block, Bounds};
 use crate::state::simulation::Constants;
@@ -66,7 +66,7 @@ impl Point {
 
 impl Block {
 
-    pub fn from_coords(x: usize, y: usize, size: f32) -> Self {
+    pub fn new(x: u32, y: u32, size: f32) -> Self {
         // let nx = x as f32 * size;
         // let ny = y as f32 * size;
 
@@ -106,59 +106,67 @@ impl Block {
 impl Bounds {
 
     pub fn new(constants: &Constants) -> Bounds {
-        let mut matrix = create_placement_matrix(constants.block_amount);
-
-        let mid = (matrix.len() - 1) / 2;
-        let mut row = mid;
-        let mut col = mid;
-
-        matrix[row][col] = 1;
-
         let mut range = rand::thread_rng();
-        let mut blocks = Vec::with_capacity(constants.block_amount as usize);
-        blocks.push(Block::from_coords(row, col, constants.block_size));
 
-        let mut created = 1;
+        let mut used_map: HashMap<String, Coordinate> = HashMap::new();
+        let mut avaliable = Vec::new();
+        
+        let node = Coordinate::new(0, 0);
+        avaliable.push(node.upper_coordinate());
+        avaliable.push(node.lower_coordinate());
+        avaliable.push(node.left_coordinate());
+        avaliable.push(node.right_coordinate());
+        used_map.insert(node.key(), node);
 
-        while created < constants.block_amount {
-            let mut nrow = row as isize;
-            let mut ncol = col as isize;
+        let mut smallest_x: isize = 0;
+        let mut smallest_y: isize = 0;
 
-            let r = range.gen_range(0, 3);
+        for _ in 1..constants.block_amount {
+            let r = range.gen_range(0, avaliable.len()-1);
+            let node = avaliable.swap_remove(r);
+            let next_nodes = vec![
+                node.upper_coordinate(),
+                node.lower_coordinate(),
+                node.left_coordinate(),
+                node.right_coordinate()
+            ];
 
-            match r {
-                0 => { nrow += 1; }
-                1 => { nrow -= 1; }
-                2 => { ncol += 1; }
-                3 => { ncol -= 1; }
-                _ => panic!("invalid random generated: {}", r)
+            used_map.insert(node.key(), node);
+
+            for next_node in next_nodes {
+                if !used_map.contains_key(&next_node.key()) {
+                    if next_node.x < smallest_x {
+                        smallest_x = next_node.x;
+                    }
+                    if next_node.y < smallest_y {
+                        smallest_y = next_node.y;
+                    }
+                    avaliable.push(next_node);
+                }
             }
-
-            if (nrow < 0 || matrix.len() as isize <= nrow) || (ncol < 0 || matrix[nrow as usize].len() as isize <= ncol) {
-                continue;
-            }
-
-            let urow = nrow as usize;
-            let ucol = ncol as usize;
-            
-            if matrix[urow][ucol] == 1 {
-                row = urow;
-                col = ucol;
-                continue;
-            }
-
-            let block = Block::from_coords(ucol, urow, constants.block_size);
-            blocks.push(block);
-
-            matrix[urow][ucol] = 1;
-            row = urow;
-            col = ucol;
-            created += 1;
         }
 
-        let width = get_bounds_width(&matrix) as u32;
-        let height = get_bounds_height(&matrix) as u32;
+        let mut blocks = Vec::with_capacity(used_map.len());
+        let mut width: u32 = 0;
+        let mut height: u32 = 0;
 
+        for node in used_map.values_mut() {
+            node.x += smallest_x.abs();
+            node.y += smallest_y.abs();
+
+            let x = node.x as u32;
+            let y = node.y as u32;
+
+            if x > width {
+                width = x;
+            }
+            if y > height {
+                height = y;
+            }
+
+            blocks.push(Block::new(x, y, constants.block_size));
+        }
+       
         return Bounds {
             blocks: blocks,
             width: width,
@@ -183,5 +191,53 @@ impl Bounds {
 
     //     return new_bounds;
     // }
+
+}
+
+pub struct Coordinate {
+    x: isize,
+    y: isize
+}
+
+impl Coordinate {
+
+    pub fn new(x: isize, y: isize) -> Coordinate {
+        return Coordinate {
+            x: x,
+            y: y
+        }
+    }
+
+    pub fn key(&self) -> String {
+        return format!("{},{}", self.x, self.y);
+    }
+
+    pub fn upper_coordinate(&self) -> Coordinate {
+        return Coordinate {
+            x: self.x,
+            y: self.y - 1
+        }
+    }
+
+    pub fn lower_coordinate(&self) -> Coordinate {
+        return Coordinate {
+            x: self.x,
+            y: self.y + 1
+        }
+    }
+
+    pub fn left_coordinate(&self) -> Coordinate {
+        return Coordinate {
+            x: self.x - 1,
+            y: self.y
+        }
+    }
+
+    pub fn right_coordinate(&self) -> Coordinate {
+        return Coordinate {
+            x: self.x + 1,
+            y: self.y
+        }
+    }
 
 }

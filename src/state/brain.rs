@@ -5,26 +5,45 @@ use std::collections::HashMap;
 use std::thread;
 
 use rand::Rng;
+use rand::prelude::*;
 use rand;
 
 
 use crate::state::models::{Brain, Neuron, Activation, Creature};
 use crate::state::simulation::Constants;
 
+fn normalize(inputs: &mut Vec<f32>) {
+    let mut min: f32 = f32::MAX;
+    let mut max: f32 = f32::MIN;
+
+    for i in inputs.iter() {
+        if i < &min {
+            min = *i;
+        }
+        if i > &max {
+            max = *i;
+        }
+    }
+
+    for i in inputs.iter_mut() {
+        *i = (*i - min) / (max - min);
+    }
+}
+
 impl Neuron {
 
     pub fn random(weight_size: u8) -> Self {
-        let mut weights = Vec::new();
+        let mut weights: Vec<f32> = Vec::new();
         let mut range = rand::thread_rng();
 
         for _ in 0..weight_size {
-            weights.push(range.gen_range(0.0f32, 1.0f32));
+            weights.push(range.gen());
         }
 
         return Neuron {
             activation: 1,
             weights: weights,
-            bias: range.gen_range(0.0f32, 1.0f32),
+            bias: range.gen(),
         }
     }
 
@@ -41,7 +60,9 @@ impl Neuron {
         }
 
         total = match self.activation {
-            1 => { 1.0 / (1.0 + (-total).exp()) },
+            1 => {
+                1.0 / (1.0 + (-total).exp())
+            },
             _ => {
                 panic!("cannot use softmax");
             }
@@ -55,19 +76,35 @@ impl Neuron {
 impl Brain {
 
     pub fn new(constants: &Constants) -> Self {
-        return Brain {
+        let mut brain = Brain {
             hidden: Vec::with_capacity(constants.brain_size as usize),
             output: Vec::with_capacity(constants.output_size as usize),
             activation: 2,
         };
+
+        for _ in 0..constants.brain_size {
+            brain.hidden.push(Neuron::random(constants.input_size as u8));
+        }
+
+        for _ in 0..constants.output_size {
+            brain.output.push(Neuron::random(constants.brain_size as u8));
+        }
+
+        return brain;
     }
     
-    pub fn compute(&self, inputs: &Vec<f32>) -> (Vec<f32>, u8) {
+    pub fn compute(&self, inputs: &mut Vec<f32>) -> (Vec<f32>, u8) {
         let hidden_size = self.hidden.len();
         let output_size = self.output.len();
 
+        // TODO: would be nice to allocate this on the stack in the future
+        // but I serialize the entire brain so I need a lazy static
+        // somewhere to act as a hashmap for the buffers
         let mut hidden_buffer = Vec::with_capacity(hidden_size);
         let mut output_buffer = Vec::with_capacity(output_size);
+
+        // normalize inputs from 0 -> 1
+        normalize(inputs);
 
         // compute inputs on hidden layer
         for i in 0..hidden_size {
@@ -83,16 +120,18 @@ impl Brain {
         return match self.activation {
             2 => {
                 let mut exps = Vec::with_capacity(output_size);
+                let mut exp_sum = 0.0;
                 for output in output_buffer.iter() {
-                    exps.push(output.exp());
+                    let exp = output.exp();
+                    exp_sum += exp;
+                    exps.push(exp);
                 }
 
-                let sum: f32 = exps.iter().sum();
                 let mut max = 0.0;
                 let mut max_index: u8 = 0;
                 let mut outputs = Vec::with_capacity(output_size);
                 for i in 0..output_buffer.len() {
-                    let output = exps[i] / sum;
+                    let output = exps[i] / exp_sum;
                     if output > max {
                         max = output;
                         max_index = i as u8;
@@ -114,6 +153,37 @@ impl Brain {
         return new_brain;
     } 
 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_have_no_decisions() {
+        let constants = Constants {
+            world_width: 800,
+            world_height: 640,
+            max_cycles: 1000,
+            max_steps: 1000,
+            creature_amount: 100,
+            brain_size: 5,
+            input_size: 5,
+            output_size: 5,
+            block_amount: 10,
+            block_size: 5.0
+        };
+
+        let brain = Brain::new(&constants);
+
+        let mut inputs = vec![0.0, 0.0, 0.0, 0.0, 0.0];
+
+        let (outputs, decision) = brain.compute(&mut inputs);
+
+        println!("outputs: {:?}, decision: {}", outputs, decision);
+
+        assert_eq!(1, 1);
+    }
 }
 
 // pub fn compute(

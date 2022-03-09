@@ -53,10 +53,10 @@ pub fn dynamic_body(block_size: f32, bounds: &Bounds) -> (RigidBody, Collider) {
 
     let mut shapes = Vec::new();
     for block in bounds.blocks.iter() {
-        shapes.push((
-            Isometry::new(vector![block.position.x, block.position.y], 0.0),
-            SharedShape::cuboid(half_size, half_size)
-        ));
+      shapes.push((
+        Isometry::new(vector![block.position.x, block.position.y], 0.0),
+        SharedShape::cuboid(block_size, block_size)
+      ));
     }
 
     let mut collider = ColliderBuilder::compound(shapes).build();

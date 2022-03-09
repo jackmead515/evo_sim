@@ -42,8 +42,10 @@ pub struct Traits {
     #[prost(float, required, tag="3")]
     pub stamina: f32,
     #[prost(float, required, tag="4")]
-    pub mass: f32,
-    #[prost(float, required, tag="5")]
+    pub block_mass: f32,
+    #[prost(uint32, required, tag="5")]
+    pub block_amount: u32,
+    #[prost(float, required, tag="6")]
     pub strength: f32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]

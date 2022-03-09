@@ -3,6 +3,12 @@ extern crate env_logger;
 extern crate prost_build;
 extern crate serde;
 extern crate serde_json;
+extern crate bytes;
+extern crate glutin_window;
+extern crate graphics;
+extern crate opengl_graphics;
+extern crate piston;
+extern crate petgraph;
 
 use std::env;
 
