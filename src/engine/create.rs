@@ -54,7 +54,7 @@ pub fn dynamic_body(block_size: f32, bounds: &Bounds) -> (RigidBody, Collider) {
     let mut shapes = Vec::new();
     for block in bounds.blocks.iter() {
       shapes.push((
-        Isometry::new(vector![block.position.x, block.position.y], 0.0),
+        Isometry::new(vector![block.position.x, block.position.y], f32::consts::FRAC_PI_2),
         SharedShape::cuboid(block_size, block_size)
       ));
     }

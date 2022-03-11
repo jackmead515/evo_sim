@@ -5,6 +5,7 @@ use rand::prelude::ThreadRng;
 use rand;
 use rapier2d::prelude::*;
 
+use crate::state::Evolver;
 use crate::state::models::{Cycle, Step, Creature};
 
 pub struct Constants {
@@ -38,13 +39,13 @@ impl Simulation {
                 world_width: 800,
                 world_height: 640,
                 max_cycles: 1000,
-                max_steps: 10,
-                creature_amount: 10,
+                max_steps: 1000,
+                creature_amount: 20,
                 brain_size: 50,
                 input_size: 5,
                 output_size: 5,
                 block_amount: 10,
-                block_size: 5.0
+                block_size: 5.0,
             }
         };
     }

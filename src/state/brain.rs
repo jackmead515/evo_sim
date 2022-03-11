@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::sync::mpsc::channel;
 use std::collections::HashMap;
 use std::thread;
+use std::str;
 
 use rand::Rng;
 use rand::prelude::*;
@@ -41,7 +42,7 @@ fn normalize(inputs: &mut Vec<f32>) {
 
 impl Neuron {
 
-    pub fn random(weight_size: u8) -> Self {
+    pub fn random(weight_size: u32) -> Self {
         let mut weights: Vec<f32> = Vec::new();
         let mut range = rand::thread_rng();
 
@@ -68,6 +69,8 @@ impl Neuron {
             total += weight * input;
         }
 
+        total += self.bias;
+
         total = match self.activation {
             1 => {
                 // sigmoid activation
@@ -93,14 +96,75 @@ impl Brain {
         };
 
         for _ in 0..constants.brain_size {
-            brain.hidden.push(Neuron::random(constants.input_size as u8));
+            brain.hidden.push(Neuron::random(constants.input_size));
         }
 
         for _ in 0..constants.output_size {
-            brain.output.push(Neuron::random(constants.brain_size as u8));
+            brain.output.push(Neuron::random(constants.brain_size));
         }
 
         return brain;
+    }
+
+    /// Generates a set of gene codes that describe the brain 
+    /// and it's weights. The algorithm splits the brain weights 
+    /// into partitions, totally each up and normalizing the values
+    /// to be between 65 and 90 (A to Z in the ASCII table).
+    pub fn gene_codes(&self, constants: &Constants) -> Vec<String> {
+        let mut genes: Vec<String> = Vec::new();
+        let mut weight_norms: Vec<u8> = Vec::new();
+
+        // 65 - 90 == A - Z
+        let min_char = 65.0;
+        let max_char = 90.0;
+
+        // total size of the hidden weights. Plus one for the bias.
+        let max_hidden_size: f32 = (constants.input_size + 1) as f32;
+        let max_output_size: f32 = (constants.brain_size + 1) as f32;
+        
+        // sum up the weights and bias of the hidden layer
+        for neuron in self.hidden.iter() {
+            let weight_sum = neuron.weights.iter().sum::<f32>() + neuron.bias;
+            let norm = ((weight_sum / max_hidden_size) * (max_char - min_char)) + min_char;
+           
+            // should be a safe cast norm to u8 because 
+            // ascii is between 65 - 90. u8 is between 0 and 255.
+            weight_norms.push(norm as u8);
+        }
+
+        // sum up the weights and bias of the output layer
+        for neuron in self.output.iter() {
+            let weight_sum = neuron.weights.iter().sum::<f32>() + neuron.bias;
+            let norm = ((weight_sum / max_output_size) * (max_char - min_char)) + min_char;
+            weight_norms.push(norm as u8);
+        }
+
+        let mut index = 0;
+        let gene_code_size = 4;
+
+        while index < weight_norms.len() {
+
+            // partition up the weights into partitions of 4
+            let mut slice: Vec<u8> = Vec::with_capacity(gene_code_size);
+            for i in index..index+4 {
+                if i < weight_norms.len() {
+                    slice.push(weight_norms[i]);
+                }
+            }
+            
+            // append 65, or A, if there is no more norms left
+            while slice.len() != gene_code_size {
+                slice.push(min_char as u8);
+            }
+
+            // convert numbers to String in ASCII
+            let code = String::from_utf8(slice).unwrap();
+            genes.push(code);
+
+            index += gene_code_size;
+        }
+
+        return genes;
     }
     
     pub fn compute(&self, inputs: &mut Vec<f32>) -> (Vec<f32>, u8) {
@@ -168,6 +232,7 @@ impl Brain {
     pub fn evolve(&self, constants: &Constants) -> Brain {
         let new_brain = self.clone();
 
+
         return new_brain;
     } 
 
@@ -202,7 +267,38 @@ mod tests {
 
         assert_eq!(1, 1);
     }
+
+    #[test]
+    fn should_have_produce_a_gene_code() {
+        let constants = Constants {
+            world_width: 800,
+            world_height: 640,
+            max_cycles: 1000,
+            max_steps: 1000,
+            creature_amount: 100,
+            brain_size: 50,
+            input_size: 5,
+            output_size: 5,
+            block_amount: 10,
+            block_size: 5.0
+        };
+
+        let mut brain = Brain::new(&constants);
+        let first_codes = brain.gene_codes(&constants);
+
+        brain.hidden[2].weights[0] = 0.5;
+        brain.hidden[2].weights[1] = 0.5;
+        brain.hidden[2].weights[2] = 0.5;
+
+        let second_codes = brain.gene_codes(&constants);
+
+        println!("first codes: {:?}", first_codes);
+        println!("second codes: {:?}", second_codes);
+
+        assert_eq!(1, 1);
+    }
 }
+
 
 // pub fn compute(
 //     creature_map: Arc<Mutex<HashMap<u32, Creature>>>,

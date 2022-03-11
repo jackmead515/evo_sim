@@ -53,6 +53,9 @@ pub fn handler(simulation: &mut Simulation, request: Request) {
             serialized = compressor.finish().unwrap();
             info!("compressed cycle {} size: {}", cycle.cycle_id, serialized.len());
             let file_name = format!("{}/cycle_{}.zip", &sim_folder_name[..], cycle.cycle_id);
+
+            fs::remove_file(&file_name);
+
             let mut file = fs::File::create(file_name).expect(&format!("Failed to create cycle file {}", cycle.cycle_id)[..]);
             file.write_all(&serialized).expect(&format!("Failed to write cycle data {}", cycle.cycle_id)[..]);
         },

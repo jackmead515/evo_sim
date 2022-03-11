@@ -1,35 +1,28 @@
 use rand::Rng;
 use rand;
 
+use crate::state::{GeneExpression, Evolver};
 use crate::state::models::{Traits};
 use crate::state::simulation::Constants;
 
 impl Traits {
 
     pub fn new(constants: &Constants) -> Traits {
+        let mut range = rand::thread_rng();
         return Traits {
-            restitution: 0.3,
-            friction: 0.2,
-            stamina: 100.0,
-            block_mass: 5.0,
+            restitution: 0.3,//0.3,
+            friction: 0.1,//0.2,
+            stamina: range.gen_range(0f32, 100f32),//100.0,
+            block_mass: range.gen_range(5.0f32, 10.0f32),
             block_amount: constants.block_amount,
             strength: 100.0,
         };
     }
 
-    pub fn evolve(&self, constants: &Constants) -> Traits {
-        let new_traits = self.clone();
-
-        return new_traits;
-    }
-
     pub fn get_net_speed(&self) -> f32 {
-        let net_speed = self.strength - self.get_net_mass();
-        if net_speed > 0.0 {
-            return net_speed;
-        }
-
-        return net_speed;
+        let net_mass =  self.get_net_mass();
+        let max_mass = self.block_amount as f32 * 10.0 * 2.0;
+        return (1.0 / net_mass) * max_mass * 9000.0;
     }
 
     pub fn get_net_mass(&self) -> f32 {
@@ -41,6 +34,21 @@ impl Traits {
     }
 
 }
+
+impl Evolver for Traits {
+    fn evolve(&self, constants: &Constants) -> Traits {
+        let new_traits = self.clone();
+
+        return new_traits;
+    }
+}
+
+impl GeneExpression for Traits {
+    fn gene_codes(&self, constants: &Constants) -> Vec<String> {
+        return Vec::new();
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -63,9 +71,12 @@ mod tests {
         
         let mut traits = Traits::new(&constants);
 
-        assert_eq!(50.0, traits.get_net_mass());
-        assert_eq!(50.0, traits.get_net_speed());
-        assert_eq!(1.6666666, traits.get_stamina_factor());
+        println!("traits: {:?}", traits);
+        println!("net mass: {}", traits.get_net_mass());
+        println!("net speed: {}", traits.get_net_speed());
+        println!("stamina factor: {}", traits.get_stamina_factor());
+
+        assert_eq!(1, 1);
 
     }
 }

@@ -54,8 +54,17 @@ class Container:
                     (x1, y1+h)
                 ])
 
-        for rect in rects:             
-            self.canvas.create_polygon(*rect, fill='lime', outline='red')
+        for rect in rects:  
+            #self.canvas.create_line(rect[0][0], rect[0][1], rect[1][0], rect[1][1], fill='lime')
+            #self.canvas.create_line(rect[1][0], rect[1][1], rect[2][0], rect[2][1], fill='lime')
+            #self.canvas.create_line(rect[2][0], rect[2][1], rect[3][0], rect[3][1], fill='lime')
+            #self.canvas.create_line(rect[3][0], rect[3][1], rect[0][0], rect[0][1], fill='lime')
+            self.canvas.create_polygon(*rect,
+                fill='lime',
+                outline='red',
+                activefill='red',
+                smooth=1
+            )
 
         #print(f'render: {time.perf_counter() - self.last_render}')
         self.last_render = time.perf_counter()

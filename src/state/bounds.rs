@@ -4,6 +4,7 @@ use rand;
 
 use std::collections::{HashSet, HashMap};
 
+use crate::state::{GeneExpression, Evolver};
 use crate::state::models::{Point, Block, Bounds};
 use crate::state::simulation::Constants;
 
@@ -139,11 +140,7 @@ impl Bounds {
         }
     }
 
-    pub fn evolve(&self, constants: &Constants) -> Bounds {
-        let new_bounds = self.clone();
-        
-        return new_bounds;
-    }
+    
 
     // Translates this block by the x and y and by the radian rotation
     // and returns a new Block with the updated position
@@ -157,6 +154,20 @@ impl Bounds {
     //     return new_bounds;
     // }
 
+}
+
+impl Evolver for Bounds {
+    fn evolve(&self, constants: &Constants) -> Bounds {
+        let new_bounds = self.clone();
+    
+        return new_bounds;
+    }
+}
+
+impl GeneExpression for Bounds {
+    fn gene_codes(&self, constants: &Constants) -> Vec<String> {
+        return Vec::new();
+    }
 }
 
 pub struct Coordinate {
