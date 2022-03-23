@@ -54,12 +54,12 @@ pub fn dynamic_body(block_size: f32, bounds: &Bounds) -> (RigidBody, Collider) {
     let mut shapes = Vec::new();
     for block in bounds.blocks.iter() {
       shapes.push((
-        Isometry::new(vector![block.position.x, block.position.y], f32::consts::FRAC_PI_2),
-        SharedShape::cuboid(block_size, block_size)
+        Isometry::new(vector![block.position.x*block_size, block.position.y*block_size], 0.0),
+        SharedShape::cuboid(half_size, half_size)
       ));
     }
 
-    let mut collider = ColliderBuilder::compound(shapes).build();
+    let mut collider = ColliderBuilder::compound(shapes).density(0.5).build();
 
     // let collider = ColliderBuilder::convex_hull(&path)
     //     .unwrap()

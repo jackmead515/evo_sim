@@ -34,6 +34,8 @@ pub fn start() {
 
         if matches!(method, Method::Post) && url == "/perform-cycle" {
             routes::perform_cycle::handler(&mut simulation, request);
+        } else if matches!(method, Method::Post) && url.starts_with("/perform-cycles") {
+            routes::perform_cycles::handler(&mut simulation, request);    
         } else if matches!(method, Method::Put) && url == "/set-parameter" {
             routes::set_parameters::handler(&mut simulation, request);
         } else if matches!(method, Method::Get) && url == "/get-cycle" {

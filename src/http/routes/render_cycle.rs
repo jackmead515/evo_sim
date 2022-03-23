@@ -16,9 +16,9 @@ use crate::state::models::*;
 
 pub fn handler(simulation: &mut Simulation, request: Request) {
     info!("Request to render a cycle");
+    let sim_folder_name = format!("./simulations/sim_{}", simulation.simulation_id);
 
     let url = request.url();
-    let sim_folder_name = format!("./simulations/sim_{}", simulation.simulation_id);
     let splits: Vec<&str> = url.split("/").collect();
     match splits.get(2) {
         Some(cycle_id) => {

@@ -15,6 +15,7 @@ impl Traits {
             stamina: range.gen_range(0f32, 100f32),//100.0,
             block_mass: range.gen_range(5.0f32, 10.0f32),
             block_amount: constants.block_amount,
+            color: vec![0.0, 0.0, 0.0, 1.0],
             strength: 100.0,
         };
     }
@@ -22,7 +23,7 @@ impl Traits {
     pub fn get_net_speed(&self) -> f32 {
         let net_mass =  self.get_net_mass();
         let max_mass = self.block_amount as f32 * 10.0 * 2.0;
-        return (1.0 / net_mass) * max_mass * 9000.0;
+        return (1.0 / net_mass) * max_mass * 10000.0;
     }
 
     pub fn get_net_mass(&self) -> f32 {
@@ -44,7 +45,7 @@ impl Evolver for Traits {
 }
 
 impl GeneExpression for Traits {
-    fn gene_codes(&self, constants: &Constants) -> Vec<String> {
+    fn gene_codes(&self, constants: &Constants) -> Vec<u8> {
         return Vec::new();
     }
 }

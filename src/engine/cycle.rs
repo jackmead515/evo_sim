@@ -10,13 +10,14 @@ use std::sync::mpsc::channel;
 use rand::Rng;
 use rand;
 use rapier2d::prelude::*;
-use log::{info};
+use log::{info, debug};
 
 use rapier2d::dynamics::RigidBodySet;
 use rapier2d::geometry::ColliderSet;
 
 use crate::state::models::{Cycle, Step, CreatureState, Point};
 use crate::state::simulation::{Constants, Simulation};
+use crate::state::GeneExpression;
 use crate::engine;
 
 pub fn run(simulation: &Simulation, cycle: &mut Cycle) {
@@ -88,7 +89,7 @@ pub fn run(simulation: &Simulation, cycle: &mut Cycle) {
             &mut range
           );
   
-          info!("computed simulation step {} in {} ms", step.step_id, now.elapsed().as_millis());
+          debug!("computed simulation step {} in {} ms", step.step_id, now.elapsed().as_millis());
           cycle.steps.push(step);
         },
         None => {
@@ -120,6 +121,13 @@ pub fn initialize_creatures(
     // set the block amount of the creature so we can get the net mass property
     creature.traits.block_amount = creature.bounds.blocks.len() as u32;
 
+    let gene_codes = creature.gene_codes(constants);
+
+    // set the creature color!
+    creature.traits.color = creature.gene_rgba_color(&gene_codes);
+
+    //creature.traits.gene_codes = creature.ascii_codes(&gene_codes);
+
     let mass_props = collider.mass_properties();
 
     body.set_mass_properties(
@@ -139,7 +147,7 @@ pub fn initialize_creatures(
     }
     
     // randomly position creatures throughout the map
-    let translation = (range.gen_range(50.0, 550.0), range.gen_range(50.0, 550.0));
+    let translation = (range.gen_range(50.0, 750.0), range.gen_range(50.0, 590.0));
     body.set_translation(vector![translation.0, translation.1], true);
     
     // insert the physics body into the set
@@ -176,6 +184,7 @@ pub fn update_creatures(
       let creature_state = step.states.get_mut(&creature_id).unwrap();
       let translation = body.translation();
       let rotation = body.rotation().angle();
+
       creature_state.translation = Point { x: translation.x, y: translation.y };
       creature_state.rotation = rotation;
 
@@ -211,9 +220,9 @@ pub fn update_creatures(
       }
 
       if creature_id == 0 {
-        println!("{:?}", creature_state);
-        //info!("inputs: {:?}, outputs: {:?}, decision: {}", inputs, outputs, decision);
-        //println!("\tspeed {}, sfactor {}", net_speed, stamina_factor);
+        // println!("{:?}", creature_state);
+        // info!("inputs: {:?}, outputs: {:?}, decision: {}", inputs, outputs, decision);
+        // println!("\tspeed {}, sfactor {}", net_speed, stamina_factor);
       }
     }
   }

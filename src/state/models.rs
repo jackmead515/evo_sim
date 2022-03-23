@@ -47,6 +47,8 @@ pub struct Traits {
     pub block_amount: u32,
     #[prost(float, required, tag="6")]
     pub strength: f32,
+    #[prost(float, repeated, packed="false", tag="7")]
+    pub color: ::prost::alloc::vec::Vec<f32>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Neuron {

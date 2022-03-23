@@ -110,8 +110,7 @@ impl Brain {
     /// and it's weights. The algorithm splits the brain weights 
     /// into partitions, totally each up and normalizing the values
     /// to be between 65 and 90 (A to Z in the ASCII table).
-    pub fn gene_codes(&self, constants: &Constants) -> Vec<String> {
-        let mut genes: Vec<String> = Vec::new();
+    pub fn gene_codes(&self, constants: &Constants) -> Vec<u8> {
         let mut weight_norms: Vec<u8> = Vec::new();
 
         // 65 - 90 == A - Z
@@ -139,32 +138,7 @@ impl Brain {
             weight_norms.push(norm as u8);
         }
 
-        let mut index = 0;
-        let gene_code_size = 4;
-
-        while index < weight_norms.len() {
-
-            // partition up the weights into partitions of 4
-            let mut slice: Vec<u8> = Vec::with_capacity(gene_code_size);
-            for i in index..index+4 {
-                if i < weight_norms.len() {
-                    slice.push(weight_norms[i]);
-                }
-            }
-            
-            // append 65, or A, if there is no more norms left
-            while slice.len() != gene_code_size {
-                slice.push(min_char as u8);
-            }
-
-            // convert numbers to String in ASCII
-            let code = String::from_utf8(slice).unwrap();
-            genes.push(code);
-
-            index += gene_code_size;
-        }
-
-        return genes;
+        return weight_norms;
     }
     
     pub fn compute(&self, inputs: &mut Vec<f32>) -> (Vec<f32>, u8) {
@@ -230,8 +204,35 @@ impl Brain {
     }
 
     pub fn evolve(&self, constants: &Constants) -> Brain {
-        let new_brain = self.clone();
+        let mut new_brain = self.clone();
+        let mut range = rand::thread_rng();
+        let nudge = 0.01;
 
+        let hidden_l = new_brain.hidden.len();
+        let hidden_wl = new_brain.hidden[0].weights.len();
+
+        let output_l = new_brain.output.len();
+        let output_wl = new_brain.output[0].weights.len();
+
+        for _ in 0..5 {
+            let r1 = range.gen_range(0, hidden_l-1);
+            let r2 = range.gen_range(0, hidden_wl-1);
+            if nudge + new_brain.hidden[r1].weights[r2] > 1.0 {
+                new_brain.hidden[r1].weights[r2] -= nudge;
+            } else {
+                new_brain.hidden[r1].weights[r2] += nudge;
+            }
+        }
+
+        for _ in 0..5 {
+            let r1 = range.gen_range(0, output_l-1);
+            let r2 = range.gen_range(0, output_wl-1);
+            if nudge + new_brain.output[r1].weights[r2] > 1.0 {
+                new_brain.output[r1].weights[r2] -= nudge;
+            } else {
+                new_brain.output[r1].weights[r2] += nudge;
+            }
+        }
 
         return new_brain;
     } 
@@ -286,14 +287,11 @@ mod tests {
         let mut brain = Brain::new(&constants);
         let first_codes = brain.gene_codes(&constants);
 
-        brain.hidden[2].weights[0] = 0.5;
-        brain.hidden[2].weights[1] = 0.5;
-        brain.hidden[2].weights[2] = 0.5;
+        brain.hidden[2].weights[0] = 0.12332;
+        brain.hidden[2].weights[1] = 0.21123;
+        brain.hidden[2].weights[2] = 0.32112;
 
         let second_codes = brain.gene_codes(&constants);
-
-        println!("first codes: {:?}", first_codes);
-        println!("second codes: {:?}", second_codes);
 
         assert_eq!(1, 1);
     }

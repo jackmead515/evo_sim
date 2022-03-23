@@ -37,6 +37,8 @@ message Traits {
   required float block_mass = 4;
   required uint32 block_amount = 5;
   required float strength = 6;
+  repeated float color = 7;
+  repeated string gene_codes = 8;
 }
 
 enum Activation {

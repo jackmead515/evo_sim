@@ -165,8 +165,26 @@ impl Evolver for Bounds {
 }
 
 impl GeneExpression for Bounds {
-    fn gene_codes(&self, constants: &Constants) -> Vec<String> {
-        return Vec::new();
+    fn gene_codes(&self, constants: &Constants) -> Vec<u8> {
+        let mut weight_norms: Vec<u8> = Vec::new();
+
+        // 65 - 90 == A - Z
+        let min_char = 65.0;
+        let max_char = 90.0;
+
+        let max_block_pos = (self.width * self.height) as f32;
+
+        for block in self.blocks.iter() {
+            let x = block.position.x;
+            let y = block.position.y;
+            let norm = (((x+y) / max_block_pos) * (max_char - min_char)) + min_char;
+
+            // should be a safe cast norm to u8 because 
+            // ascii is between 65 - 90. u8 is between 0 and 255.
+            weight_norms.push(norm as u8);
+        }
+
+        return weight_norms;
     }
 }
 
@@ -214,6 +232,39 @@ impl Coordinate {
             x: self.x + 1,
             y: self.y
         }
+    }
+
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_have_gene_codes() {
+        let constants = Constants {
+            world_width: 800,
+            world_height: 640,
+            max_cycles: 1000,
+            max_steps: 1000,
+            creature_amount: 100,
+            brain_size: 5,
+            input_size: 5,
+            output_size: 5,
+            block_amount: 10,
+            block_size: 5.0
+        };
+
+        let bounds_one = Bounds::new(&constants);
+        let bounds_two = Bounds::new(&constants);
+
+        let gene_codes_one = bounds_one.gene_codes(&constants);
+        let gene_codes_two = bounds_two.gene_codes(&constants);
+
+        println!("gene_codes: {:?}", gene_codes_one);
+        println!("gene_codes: {:?}", gene_codes_two);
+
+        assert_eq!(1, 1);
     }
 
 }
