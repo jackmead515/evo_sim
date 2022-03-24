@@ -8,22 +8,12 @@ use crate::state::{GeneExpression, Evolver};
 use crate::state::models::{Point, Block, Bounds};
 use crate::state::simulation::Constants;
 
-impl Point {
-    pub fn new(x: f32, y: f32) -> Self {
-        return Point { x: x, y: y };
-    }
-}
-
 impl Block {
 
-    pub fn new(x: u32, y: u32, size: f32) -> Self {
-        // let nx = x as f32 * size;
-        // let ny = y as f32 * size;
-
+    pub fn new(x: f32, y: f32, size: f32) -> Self {
         return Block {
-            position: Point { x: x as f32, y: y as f32 },
-            width: size,
-            height: size,
+            position: Point { x: x, y: y },
+            size: size
         };
     }
 
@@ -110,8 +100,8 @@ impl Bounds {
         }
 
         let mut blocks = Vec::with_capacity(used_map.len());
-        let mut width: u32 = 0;
-        let mut height: u32 = 0;
+        let mut width: f32 = 0.0;
+        let mut height: f32 = 0.0;
 
         // normalize all the nodes back to the origin.
         // some coordinates could be negative and we
@@ -120,8 +110,8 @@ impl Bounds {
             node.x += smallest_x.abs();
             node.y += smallest_y.abs();
 
-            let x = node.x as u32;
-            let y = node.y as u32;
+            let x = (node.x - 1) as f32;
+            let y = (node.y - 1) as f32;
 
             if x > width {
                 width = x;
@@ -132,7 +122,12 @@ impl Bounds {
 
             blocks.push(Block::new(x, y, constants.block_size));
         }
-       
+        
+        // add the block size because the x,y describes
+        // the top-left corner position
+        // width += constants.block_size;
+        // height += constants.block_size;
+
         return Bounds {
             blocks: blocks,
             width: width,

@@ -20,14 +20,13 @@ message Point {
 
 message Block {
   required Point position = 1;
-  required float width = 2;
-  required float height = 3;
+  required float size = 2;
 }
 
 message Bounds {
   repeated Block blocks = 1;
-  required uint32 width = 2;
-  required uint32 height = 3;
+  required float width = 2;
+  required float height = 3;
 }
 
 message Traits {

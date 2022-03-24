@@ -14,10 +14,10 @@ class Container:
 
     def __init__(self, cycle):
         self.window = Tk()
-        self.canvas = Canvas(self.window, width=800, height=640, bg='black')
+        self.canvas = Canvas(self.window, width=1200, height=640, bg='black')
         self.canvas.pack()
 
-        self.play_scale = Scale(self.window, from_=0, to=999, orient=HORIZONTAL, command=self.on_slider)
+        self.play_scale = Scale(self.window, from_=0, to=9999, orient=HORIZONTAL, command=self.on_slider)
         self.play_scale.pack()
 
         self.play_button = Button(self.window, text='Play', command=self.on_play)
@@ -64,10 +64,9 @@ class Container:
             rcos, rsin = cos(rot), sin(rot)
 
             for block in creature.bounds.blocks:
-                x, y = block.position.x, block.position.y
-                w, h = block.width, block.height
-                x1, y1 = x*w, y*h
-                x2, y2 = x1+w, y1+h
+                x, y, s = block.position.x, block.position.y, block.size
+                x1, y1 = x*s, y*s
+                x2, y2 = x1+s, y1+s
 
                 points = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
 
@@ -84,6 +83,7 @@ class Container:
                 *rect[1],
                 fill=rect[0],
                 activefill='red',
+                outline='gray',
                 smooth=0
             )
 

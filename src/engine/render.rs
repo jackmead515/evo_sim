@@ -45,13 +45,13 @@ pub fn run(simulation: &Simulation, cycle: &Cycle) {
                 let rs = state.rotation.sin();
 
                 for block in creature.bounds.blocks.iter() {
-                    let x = block.position.x * block.width;
-                    let y = block.position.y * block.height;
+                    let x = block.position.x * block.size;
+                    let y = block.position.y * block.size;
 
                     //let x1 = (x*rc - y*rs) + tx;
                     //let y1 = (x*rs + y*rs) + ty;
 
-                    let square = rectangle::square(0.0, 0.0, block.width as f64);
+                    let square = rectangle::square(0.0, 0.0, block.size as f64);
 
                     gl.draw(args.viewport(), |c, gl| {
                         // Clear the screen.

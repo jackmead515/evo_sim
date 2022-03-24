@@ -17,6 +17,7 @@ impl Traits {
             block_amount: constants.block_amount,
             color: vec![0.0, 0.0, 0.0, 1.0],
             strength: 100.0,
+            gene_codes: Vec::new(),
         };
     }
 

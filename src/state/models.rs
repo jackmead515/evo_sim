@@ -20,18 +20,16 @@ pub struct Block {
     #[prost(message, required, tag="1")]
     pub position: Point,
     #[prost(float, required, tag="2")]
-    pub width: f32,
-    #[prost(float, required, tag="3")]
-    pub height: f32,
+    pub size: f32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Bounds {
     #[prost(message, repeated, tag="1")]
     pub blocks: ::prost::alloc::vec::Vec<Block>,
-    #[prost(uint32, required, tag="2")]
-    pub width: u32,
-    #[prost(uint32, required, tag="3")]
-    pub height: u32,
+    #[prost(float, required, tag="2")]
+    pub width: f32,
+    #[prost(float, required, tag="3")]
+    pub height: f32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Traits {
@@ -49,6 +47,8 @@ pub struct Traits {
     pub strength: f32,
     #[prost(float, repeated, packed="false", tag="7")]
     pub color: ::prost::alloc::vec::Vec<f32>,
+    #[prost(string, repeated, tag="8")]
+    pub gene_codes: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Neuron {
@@ -90,7 +90,7 @@ pub struct CreatureState {
     #[prost(float, required, tag="4")]
     pub stamina: f32,
     #[prost(uint32, required, tag="5")]
-    pub decision: u32
+    pub decision: u32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Wall {
@@ -117,7 +117,25 @@ pub struct Cycle {
     #[prost(message, repeated, tag="4")]
     pub steps: ::prost::alloc::vec::Vec<Step>,
 }
-
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Constants {
+    #[prost(uint32, required, tag="1")]
+    pub max_cycles: u32,
+    #[prost(uint32, required, tag="2")]
+    pub max_steps: u32,
+    #[prost(uint32, required, tag="3")]
+    pub creature_amount: u32,
+    #[prost(uint32, required, tag="4")]
+    pub brain_size: u32,
+    #[prost(uint32, required, tag="5")]
+    pub input_size: u32,
+    #[prost(uint32, required, tag="6")]
+    pub output_size: u32,
+    #[prost(uint32, required, tag="7")]
+    pub block_amount: u32,
+    #[prost(float, required, tag="8")]
+    pub block_size: f32,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum Activation {

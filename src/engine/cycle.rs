@@ -15,9 +15,8 @@ use log::{info, debug};
 use rapier2d::dynamics::RigidBodySet;
 use rapier2d::geometry::ColliderSet;
 
-use crate::state::models::{Cycle, Step, CreatureState, Point};
+use crate::state::models::{Cycle, Step, Point};
 use crate::state::simulation::{Constants, Simulation};
-use crate::state::GeneExpression;
 use crate::engine;
 
 pub fn run(simulation: &Simulation, cycle: &mut Cycle) {
@@ -56,7 +55,7 @@ pub fn run(simulation: &Simulation, cycle: &mut Cycle) {
         Some(mut step) => {
   
           if step.step_id == 0 {
-            initialize_creatures(
+            engine::initialize::initialize_creatures(
               &simulation.constants,
               cycle,
               &mut step,
@@ -98,71 +97,6 @@ pub fn run(simulation: &Simulation, cycle: &mut Cycle) {
       }
       
     }
-}
-
-/// Create the creates randomly in the world
-pub fn initialize_creatures(
-  constants: &Constants,
-  cycle: &mut Cycle,
-  step: &mut Step,
-  rigid_body_set: &mut RigidBodySet,
-  collider_set: &mut ColliderSet,
-  range: &mut rand::prelude::ThreadRng,
-) {
-  for (creature_id, mut creature) in cycle.creatures.iter_mut() {
-    let (mut body, mut collider) = engine::create::dynamic_body(constants.block_size, &creature.bounds);
-    
-    // set the basic collider and body attributes
-    body.user_data = *creature_id as u128;
-    collider.user_data = *creature_id as u128;
-    collider.set_restitution(creature.traits.restitution);
-    collider.set_friction(creature.traits.friction);
-
-    // set the block amount of the creature so we can get the net mass property
-    creature.traits.block_amount = creature.bounds.blocks.len() as u32;
-
-    let gene_codes = creature.gene_codes(constants);
-
-    // set the creature color!
-    creature.traits.color = creature.gene_rgba_color(&gene_codes);
-
-    //creature.traits.gene_codes = creature.ascii_codes(&gene_codes);
-
-    let mass_props = collider.mass_properties();
-
-    body.set_mass_properties(
-      MassProperties::new(
-        mass_props.local_com,
-        creature.traits.get_net_mass(),
-        0.0
-      ),
-      true
-    );
-
-    if *creature_id == 0 {
-      println!("creature traits: {:?}", creature.traits);
-      println!("creature bounds: {:?}", creature.bounds);
-      println!("rigid body mass: {}", body.mass());
-      println!("collider mass properties: {:?}", collider.mass_properties());
-    }
-    
-    // randomly position creatures throughout the map
-    let translation = (range.gen_range(50.0, 750.0), range.gen_range(50.0, 590.0));
-    body.set_translation(vector![translation.0, translation.1], true);
-    
-    // insert the physics body into the set
-    let body_handle = rigid_body_set.insert(body);
-    collider_set.insert_with_parent(collider, body_handle, rigid_body_set);
-    
-    // insert the creature state into the state map
-    step.states.insert(*creature_id, CreatureState {
-      creature_id: *creature_id,
-      translation: Point { x: translation.0, y: translation.1 },
-      stamina: creature.traits.stamina,
-      rotation: 0.0,
-      decision: 0,
-    });
-  }
 }
 
 pub fn update_creatures(
@@ -220,7 +154,7 @@ pub fn update_creatures(
       }
 
       if creature_id == 0 {
-        // println!("{:?}", creature_state);
+        println!("{:?}", creature_state);
         // info!("inputs: {:?}, outputs: {:?}, decision: {}", inputs, outputs, decision);
         // println!("\tspeed {}, sfactor {}", net_speed, stamina_factor);
       }

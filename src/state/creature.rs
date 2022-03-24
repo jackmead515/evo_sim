@@ -49,7 +49,7 @@ mod tests {
             world_width: 800,
             world_height: 640,
             max_cycles: 1000,
-            max_steps: 1000,
+            max_steps: 100,
             creature_amount: 100,
             brain_size: 50,
             input_size: 5,
@@ -62,7 +62,7 @@ mod tests {
 
         let gene_codes = creature.gene_codes(&constants);
         let ascii_codes = creature.ascii_codes(&gene_codes);
-        let color = creature.gene_rgba_color(&gene_codes);
+        let color = creature.rgba_codes(&gene_codes);
 
         println!("gene_codes: {:?}", gene_codes);
         println!("ascii_codes: {:?}", ascii_codes);
@@ -87,7 +87,7 @@ mod tests {
         for i in 0..5 {
             let creature = Creature::new(0, &constants);
             let gene_codes = creature.gene_codes(&constants);
-            let color = creature.gene_rgba_color(&gene_codes);
+            let color = creature.rgba_codes(&gene_codes);
             println!("color_{}: {:?}", i, color);
         }
     }

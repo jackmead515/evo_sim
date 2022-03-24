@@ -36,10 +36,10 @@ impl Simulation {
             computed_cycles: 0,
             current_cycle: None,
             constants: Constants {
-                world_width: 800,
+                world_width: 1200,
                 world_height: 640,
                 max_cycles: 1000,
-                max_steps: 1000,
+                max_steps: 100,
                 creature_amount: 20,
                 brain_size: 50,
                 input_size: 5,

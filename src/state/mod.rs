@@ -44,7 +44,7 @@ pub trait GeneExpression {
         return genes;
     }
     
-    fn gene_rgba_color(&self, codes: &Vec<u8>) -> Vec<f32> {
+    fn rgba_codes(&self, codes: &Vec<u8>) -> Vec<f32> {
         let mut color: Vec<f32> = Vec::new();
 
         let min_num = 0.0;
