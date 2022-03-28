@@ -9,9 +9,7 @@ use rand::Rng;
 use rand::prelude::*;
 use rand;
 
-
-use crate::state::models::{Brain, Neuron, Activation, Creature};
-use crate::state::simulation::Constants;
+use crate::state::models::*;
 
 fn normalize(inputs: &mut Vec<f32>) {
     let mut min: f32 = f32::MAX;
@@ -90,17 +88,17 @@ impl Brain {
 
     pub fn new(constants: &Constants) -> Self {
         let mut brain = Brain {
-            hidden: Vec::with_capacity(constants.brain_size as usize),
-            output: Vec::with_capacity(constants.output_size as usize),
+            hidden: Vec::with_capacity(constants.initial_brain_size as usize),
+            output: Vec::with_capacity(constants.brain_output_size as usize),
             activation: 2,
         };
 
-        for _ in 0..constants.brain_size {
-            brain.hidden.push(Neuron::random(constants.input_size));
+        for _ in 0..constants.initial_brain_size {
+            brain.hidden.push(Neuron::random(constants.brain_input_size));
         }
 
-        for _ in 0..constants.output_size {
-            brain.output.push(Neuron::random(constants.brain_size));
+        for _ in 0..constants.brain_output_size {
+            brain.output.push(Neuron::random(constants.initial_brain_size));
         }
 
         return brain;
@@ -118,8 +116,8 @@ impl Brain {
         let max_char = 90.0;
 
         // total size of the hidden weights. Plus one for the bias.
-        let max_hidden_size: f32 = (constants.input_size + 1) as f32;
-        let max_output_size: f32 = (constants.brain_size + 1) as f32;
+        let max_hidden_size: f32 = (constants.brain_input_size + 1) as f32;
+        let max_output_size: f32 = (self.hidden.len() + 1) as f32;
         
         // sum up the weights and bias of the hidden layer
         for neuron in self.hidden.iter() {
@@ -237,64 +235,6 @@ impl Brain {
         return new_brain;
     } 
 
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn should_have_no_decisions() {
-        let constants = Constants {
-            world_width: 800,
-            world_height: 640,
-            max_cycles: 1000,
-            max_steps: 1000,
-            creature_amount: 100,
-            brain_size: 5,
-            input_size: 5,
-            output_size: 5,
-            block_amount: 10,
-            block_size: 5.0
-        };
-
-        let brain = Brain::new(&constants);
-
-        let mut inputs = vec![0.0, 0.0, 0.0, 0.0, 0.0];
-
-        let (outputs, decision) = brain.compute(&mut inputs);
-
-        println!("outputs: {:?}, decision: {}", outputs, decision);
-
-        assert_eq!(1, 1);
-    }
-
-    #[test]
-    fn should_have_produce_a_gene_code() {
-        let constants = Constants {
-            world_width: 800,
-            world_height: 640,
-            max_cycles: 1000,
-            max_steps: 1000,
-            creature_amount: 100,
-            brain_size: 50,
-            input_size: 5,
-            output_size: 5,
-            block_amount: 10,
-            block_size: 5.0
-        };
-
-        let mut brain = Brain::new(&constants);
-        let first_codes = brain.gene_codes(&constants);
-
-        brain.hidden[2].weights[0] = 0.12332;
-        brain.hidden[2].weights[1] = 0.21123;
-        brain.hidden[2].weights[2] = 0.32112;
-
-        let second_codes = brain.gene_codes(&constants);
-
-        assert_eq!(1, 1);
-    }
 }
 
 

@@ -1,66 +1,141 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex, RwLock};
+use std::sync::atomic::AtomicBool;
+use std::fs;
 
 use rand::Rng;
 use rand::prelude::ThreadRng;
-use rand;
 use rapier2d::prelude::*;
+use rand;
+use bytes::Buf;
+use prost::Message;
 
 use crate::state::Evolver;
-use crate::state::models::{Cycle, Step, Creature};
+use crate::state::models::{Cycle, Step, Creature, Simulation, Constants};
 
-pub struct Constants {
-    pub world_width: u32,
-    pub world_height: u32,
-    pub max_cycles: u32,
-    pub max_steps: u32,
-    pub creature_amount: u32,
-    pub brain_size: u32,
-    pub input_size: u32,
-    pub output_size: u32,
-    pub block_amount: u32,
-    pub block_size: f32,
+pub struct SimulationMap {
+    map: RwLock<HashMap<u32, Simulator>>
 }
 
-pub struct Simulation {
-    pub simulation_id: u32,
-    pub constants: Constants,
-    pub computed_cycles: u32,
-    pub current_cycle: Option<Cycle>,
-}
+impl SimulationMap {
+    
+    pub fn new() -> Self {
+        SimulationMap {
+            map: RwLock::new(HashMap::new())
+        }
+    }
 
-impl Simulation {
+    pub fn get_pop(&self, simulation_id: &u32) -> Option<Simulator> {
+        if let Ok(mut map) = self.map.write() {
+            return map.remove(simulation_id);
+        }
 
-    pub fn new(simulation_id: u32) -> Simulation {
-        return Simulation {
-            simulation_id: simulation_id,
-            computed_cycles: 0,
-            current_cycle: None,
-            constants: Constants {
-                world_width: 1200,
-                world_height: 640,
-                max_cycles: 1000,
-                max_steps: 100,
-                creature_amount: 20,
-                brain_size: 50,
-                input_size: 5,
-                output_size: 5,
-                block_amount: 10,
-                block_size: 5.0,
+        return None;
+    }
+
+    pub fn insert(&self, simulation_id: u32, simulation: Simulator) {
+        if let Ok(mut map) = self.map.write() {
+            map.insert(simulation_id, simulation);
+        }
+    }
+
+    pub fn contains(&self, simulation_id: &u32) -> bool {
+        if let Ok(map) = self.map.read() {
+            return map.contains_key(&simulation_id);
+        }
+
+        return false;
+    }
+
+    pub fn sync_from_disk(&self) {
+        if let Ok(mut map) = self.map.write() {
+            let sims_folder = "./simulations";
+
+            let folders = fs::read_dir(sims_folder).unwrap();
+
+            for folder in folders {
+                let folder_name = folder.unwrap().file_name().into_string().unwrap();
+                let sim_id = folder_name.split("_").nth(1).unwrap().parse::<u32>();
+                let sim_file = format!("{}/{}/simulation.zip", sims_folder, folder_name);
+
+                // let buffer = fs::read(sim_file).unwrap();
+                // buffer = bytes::Buf::copy_from_slice(&buffer);
+
+                // let simulation = Simulation::decode(buffer).unwrap();
+
+                // simulator
+
+                // map.insert(sim_id, simulation).unwrap();
             }
+
+        }
+    }
+
+    // pub fn get(&self, simulation_id: &u32) -> Option<&Simulation> {
+    //     if let Ok(map) = self.map.read() {
+    //         return map.get(simulation_id);
+    //     }
+
+    //     return None;
+    // }
+
+    // pub fn get_mut(&self, simulation_id: &u32) -> Option<&mut Simulation> {
+    //     if let Ok(mut map) = self.map.write() {
+    //         return map.get_mut(simulation_id);
+    //     }
+
+    //     return None;
+    // }
+
+}
+
+impl Constants {
+    pub fn new() -> Constants {
+        return Constants {
+            world_width: 2000,
+            world_height: 2000,
+            max_steps: 1000,
+            creature_amount: 20,
+            initial_brain_size: 50,
+            max_brain_size: 100,
+            min_brain_size: 10,
+            brain_input_size: 5,
+            brain_output_size: 5,
+            initial_block_amount: 5,
+            min_block_amount: 2,
+            max_block_amount: 20,
+            initial_block_size: 5.0,
+            max_block_size: 10.0,
+            min_block_size: 3.0
+        }
+    }
+}
+
+pub struct Simulator {
+    pub simulation: Simulation,
+    pub current_cycle: Option<Cycle> 
+}
+
+impl Simulator {
+
+    pub fn new(simulation_id: u32) -> Simulator {
+        return Simulator {
+            simulation: Simulation {
+                simulation_id: simulation_id,
+                cycle_ids: Vec::new(),
+                constants: Constants::new()
+            },
+            current_cycle: None
         };
     }
 
-    pub fn next_cycle(&mut self) -> Option<Cycle> {
-        if self.computed_cycles >= self.constants.max_cycles {
-            return None;
-        }
-
+    pub fn next_cycle(&self) -> Cycle {
         match &self.current_cycle {
             Some(cycle) => {
-                return Some(cycle.evolve(&self.constants));
+                return cycle.evolve(&self.simulation.constants);
             },
             None => {
-                return Some(Cycle::new(&self.constants));
+                return Cycle::new(&self.simulation.constants);
             }
         };
     }
@@ -73,7 +148,6 @@ impl Cycle {
         let mut cycle = Cycle {
             cycle_id: 0,
             creatures: HashMap::new(),
-            walls: Vec::new(),
             steps: Vec::new()
         };
 
@@ -120,7 +194,7 @@ impl Step {
         return Step {
             step_id: 0,
             states: HashMap::new(),
-            dynamic_walls: Vec::new()
+            boundaries: Vec::new()
         };
     }
 

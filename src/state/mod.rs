@@ -5,7 +5,7 @@ pub mod traits;
 pub mod creature;
 pub mod simulation;
 
-use crate::state::simulation::Constants;
+use crate::state::models::Constants;
 
 pub trait GeneExpression {
     fn gene_codes(&self, constants: &Constants) -> Vec<u8>;

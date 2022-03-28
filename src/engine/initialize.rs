@@ -15,8 +15,8 @@ use log::{info, debug};
 use rapier2d::dynamics::RigidBodySet;
 use rapier2d::geometry::ColliderSet;
 
-use crate::state::models::{Cycle, Step, CreatureState, Point};
-use crate::state::simulation::{Constants, Simulation};
+use crate::state::models::*;
+use crate::state::models::{Translation, Point};
 use crate::state::GeneExpression;
 use crate::engine;
 
@@ -99,14 +99,14 @@ pub fn initialize_creatures(
   let mut max_creature_height = 0.0;
 
   for (creature_id, mut creature) in cycle.creatures.iter_mut() {
-    let (mut body, mut collider) = engine::create::dynamic_body(constants.block_size, &creature.bounds);
+    let (mut body, mut collider) = engine::create::dynamic_body(constants.initial_block_size, &creature.bounds);
 
     if *creature_id == 0 {
       println!("{:?}", creature.bounds);
     }
 
-    let total_creature_width = creature.bounds.width * constants.block_size;
-    let total_creature_height = creature.bounds.height * constants.block_size;
+    let total_creature_width = creature.bounds.dimensions.width * constants.initial_block_size;
+    let total_creature_height = creature.bounds.dimensions.height * constants.initial_block_size;
     if total_creature_width > max_creature_width {
       max_creature_width = total_creature_width;
     }
@@ -147,16 +147,18 @@ pub fn initialize_creatures(
     let coordinate = coordinates.get(*creature_id as usize).unwrap();
     step.states.insert(*creature_id, CreatureState {
       creature_id: *creature_id,
-      translation: Point { x: coordinate.x, y: coordinate.y },
+      translation: Translation {
+        translation: Point { x: coordinate.x, y: coordinate.y },
+        rotation: 0.0,
+      },
       stamina: creature.traits.stamina,
-      rotation: 0.0,
       decision: 0,
     });
   }
 
   // as extra padding between creatures
-  max_creature_width += constants.block_size;
-  max_creature_height += constants.block_size;
+  max_creature_width += constants.initial_block_size;
+  max_creature_height += constants.initial_block_size;
 
   let total_placement_width = max_creature_width * cycle.creatures.len() as f32;
   let total_placement_height = max_creature_height * cycle.creatures.len() as f32;
@@ -180,7 +182,7 @@ pub fn initialize_creatures(
 
       println!("cx{}, cy{}, x{}, y{}", coordinate.x, coordinate.y, x, y);
 
-      creature_state.translation = Point { x: x, y: y };
+      creature_state.translation.translation = Point { x: x, y: y };
       body.set_translation(vector![x, y], true);
     }
   }

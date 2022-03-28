@@ -1,0 +1,21 @@
+
+.toolbar {
+  background-color: black;
+  border-bottom: 1px solid #aaa;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.toolbar__select {
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+  border-right: 1px solid #aaa;
+}
+
+.toolbar__steps {
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+}

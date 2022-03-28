@@ -15,8 +15,8 @@ use log::{info, debug};
 use rapier2d::dynamics::RigidBodySet;
 use rapier2d::geometry::ColliderSet;
 
-use crate::state::models::{Cycle, Step, Point};
-use crate::state::simulation::{Constants, Simulation};
+use crate::state::models::*;
+use crate::state::models::Point;
 use crate::engine;
 
 pub fn run(simulation: &Simulation, cycle: &mut Cycle) {
@@ -119,14 +119,14 @@ pub fn update_creatures(
       let translation = body.translation();
       let rotation = body.rotation().angle();
 
-      creature_state.translation = Point { x: translation.x, y: translation.y };
-      creature_state.rotation = rotation;
+      creature_state.translation.translation = Point { x: translation.x, y: translation.y };
+      creature_state.translation.rotation = rotation;
 
       // gather the inputs for the creatures brain
       let mut inputs = vec![
-        creature_state.translation.x,
-        creature_state.translation.y,
-        creature_state.rotation,
+        creature_state.translation.translation.x,
+        creature_state.translation.translation.y,
+        creature_state.translation.rotation,
         creature_state.stamina,
         step.step_id as f32
       ];

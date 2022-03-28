@@ -9,6 +9,9 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 
+#[macro_use]
+extern crate lazy_static;
+
 use std::env;
 
 pub mod http;

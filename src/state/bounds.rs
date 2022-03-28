@@ -5,18 +5,9 @@ use rand;
 use std::collections::{HashSet, HashMap};
 
 use crate::state::{GeneExpression, Evolver};
-use crate::state::models::{Point, Block, Bounds};
-use crate::state::simulation::Constants;
+use crate::state::models::*;
 
-impl Block {
-
-    pub fn new(x: f32, y: f32, size: f32) -> Self {
-        return Block {
-            position: Point { x: x, y: y },
-            size: size
-        };
-    }
-
+//impl Block {
     // Translates this block by the x and y and by the radian rotation
     // and returns a new Block with the updated position
     // pub fn translate(&mut self, x: f32, y: f32, rotation: f32) -> Block {
@@ -41,7 +32,7 @@ impl Block {
     //         p4: Point { x: x3, y: y3 }
     //     };
     // }
-}
+//}
 
 impl Bounds {
 
@@ -65,7 +56,7 @@ impl Bounds {
         let mut smallest_x: isize = 0;
         let mut smallest_y: isize = 0;
 
-        for _ in 1..constants.block_amount {
+        for _ in 1..constants.initial_block_amount {
 
             // randomly select an avaliable rect to add.
             let r = range.gen_range(0, avaliable.len()-1);
@@ -120,7 +111,7 @@ impl Bounds {
                 height = y;
             }
 
-            blocks.push(Block::new(x, y, constants.block_size));
+            blocks.push(Point { x: x, y: y });
         }
         
         // add the block size because the x,y describes
@@ -130,8 +121,10 @@ impl Bounds {
 
         return Bounds {
             blocks: blocks,
-            width: width,
-            height: height
+            dimensions: Dimension {
+                width: width,
+                height: height
+            }
         }
     }
 
@@ -167,11 +160,11 @@ impl GeneExpression for Bounds {
         let min_char = 65.0;
         let max_char = 90.0;
 
-        let max_block_pos = (self.width * self.height) as f32;
+        let max_block_pos = (self.dimensions.width * self.dimensions.height) as f32;
 
         for block in self.blocks.iter() {
-            let x = block.position.x;
-            let y = block.position.y;
+            let x = block.x;
+            let y = block.y;
             let norm = (((x+y) / max_block_pos) * (max_char - min_char)) + min_char;
 
             // should be a safe cast norm to u8 because 
@@ -183,7 +176,7 @@ impl GeneExpression for Bounds {
     }
 }
 
-pub struct Coordinate {
+struct Coordinate {
     x: isize,
     y: isize
 }
@@ -227,39 +220,6 @@ impl Coordinate {
             x: self.x + 1,
             y: self.y
         }
-    }
-
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn should_have_gene_codes() {
-        let constants = Constants {
-            world_width: 800,
-            world_height: 640,
-            max_cycles: 1000,
-            max_steps: 1000,
-            creature_amount: 100,
-            brain_size: 5,
-            input_size: 5,
-            output_size: 5,
-            block_amount: 10,
-            block_size: 5.0
-        };
-
-        let bounds_one = Bounds::new(&constants);
-        let bounds_two = Bounds::new(&constants);
-
-        let gene_codes_one = bounds_one.gene_codes(&constants);
-        let gene_codes_two = bounds_two.gene_codes(&constants);
-
-        println!("gene_codes: {:?}", gene_codes_one);
-        println!("gene_codes: {:?}", gene_codes_two);
-
-        assert_eq!(1, 1);
     }
 
 }

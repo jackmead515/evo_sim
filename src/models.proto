@@ -2,31 +2,33 @@ syntax = "proto2";
 
 package models;
 
-/**
-/simulations
-  /cycles
-    /step
-      /creatures
-        /states
-        /brains
-          /neurons
-        /traits
-*/
+enum Activation {
+  Sigmoid = 1;
+  Softmax = 2;
+}
 
 message Point {
   required float x = 1;
   required float y = 2;
 }
 
+message Dimension {
+  required float width = 1;
+  required float height = 2;
+}
+
+message Translation {
+  required Point translation = 1;
+  required float rotation = 2;
+}
+
 message Block {
   required Point position = 1;
-  required float size = 2;
 }
 
 message Bounds {
-  repeated Block blocks = 1;
-  required float width = 2;
-  required float height = 3;
+  repeated Point blocks = 1;
+  required Dimension dimensions = 2;
 }
 
 message Traits {
@@ -38,11 +40,7 @@ message Traits {
   required float strength = 6;
   repeated float color = 7;
   repeated string gene_codes = 8;
-}
-
-enum Activation {
-  Sigmoid = 1;
-  Softmax = 2;
+  required float block_size = 9;
 }
 
 message Neuron {
@@ -66,36 +64,49 @@ message Creature {
 
 message CreatureState {
   required uint32 creature_id = 1;
-  required Point translation = 2;
-  required float rotation = 3;
-  required float stamina = 4;
-  required uint32 decision = 5;
+  required Translation translation = 2;
+  required float stamina = 3;
+  required uint32 decision = 4;
 }
 
-message Wall {
-  required Bounds bounds = 1;
+message Boundary {
+  required Point position = 1;
+  required Dimension dimensions = 2;
+  required Translation translation = 3;
 }
 
 message Step {
   required uint32 step_id = 1;
   map<uint32, CreatureState> states = 2;
-  repeated Wall dynamic_walls = 3;
+  repeated Boundary boundaries = 3;
 }
 
 message Cycle {
   required uint32 cycle_id = 1;
   map<uint32, Creature> creatures = 2;
-  repeated Wall walls = 3;
-  repeated Step steps = 4;
+  repeated Step steps = 3;
 }
 
 message Constants {
-  required uint32 max_cycles = 1;
-  required uint32 max_steps = 2;
-  required uint32 creature_amount = 3;
-  required uint32 brain_size = 4;
-  required uint32 input_size = 5;
-  required uint32 output_size = 6;
-  required uint32 block_amount = 7;
-  required float block_size = 8;
+  required uint32 world_width = 1;
+  required uint32 world_height = 2;
+  required uint32 max_steps = 3;
+  required uint32 creature_amount = 4;
+  required uint32 initial_brain_size = 5;
+  required uint32 max_brain_size = 6;
+  required uint32 min_brain_size = 7;
+  required uint32 brain_input_size = 8;
+  required uint32 brain_output_size = 9;
+  required uint32 initial_block_amount = 10;
+  required uint32 min_block_amount = 11;
+  required uint32 max_block_amount = 12;
+  required float initial_block_size = 13;
+  required float max_block_size = 14;
+  required float min_block_size = 15;
+}
+
+message Simulation {
+  required uint32 simulation_id = 1;
+  required Constants constants = 2;
+  repeated uint32 cycle_ids = 3;
 }

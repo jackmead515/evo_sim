@@ -1,13 +1,3 @@
-//*
-///simulations
-///cycles
-///step
-///creatures
-///states
-///brains
-///neurons
-///traits
-
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Point {
     #[prost(float, required, tag="1")]
@@ -16,20 +6,30 @@ pub struct Point {
     pub y: f32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Dimension {
+    #[prost(float, required, tag="1")]
+    pub width: f32,
+    #[prost(float, required, tag="2")]
+    pub height: f32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Translation {
+    #[prost(message, required, tag="1")]
+    pub translation: Point,
+    #[prost(float, required, tag="2")]
+    pub rotation: f32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Block {
     #[prost(message, required, tag="1")]
     pub position: Point,
-    #[prost(float, required, tag="2")]
-    pub size: f32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Bounds {
     #[prost(message, repeated, tag="1")]
-    pub blocks: ::prost::alloc::vec::Vec<Block>,
-    #[prost(float, required, tag="2")]
-    pub width: f32,
-    #[prost(float, required, tag="3")]
-    pub height: f32,
+    pub blocks: ::prost::alloc::vec::Vec<Point>,
+    #[prost(message, required, tag="2")]
+    pub dimensions: Dimension,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Traits {
@@ -49,6 +49,8 @@ pub struct Traits {
     pub color: ::prost::alloc::vec::Vec<f32>,
     #[prost(string, repeated, tag="8")]
     pub gene_codes: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(float, required, tag="9")]
+    pub block_size: f32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Neuron {
@@ -84,18 +86,20 @@ pub struct CreatureState {
     #[prost(uint32, required, tag="1")]
     pub creature_id: u32,
     #[prost(message, required, tag="2")]
-    pub translation: Point,
+    pub translation: Translation,
     #[prost(float, required, tag="3")]
-    pub rotation: f32,
-    #[prost(float, required, tag="4")]
     pub stamina: f32,
-    #[prost(uint32, required, tag="5")]
+    #[prost(uint32, required, tag="4")]
     pub decision: u32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct Wall {
+pub struct Boundary {
     #[prost(message, required, tag="1")]
-    pub bounds: Bounds,
+    pub position: Point,
+    #[prost(message, required, tag="2")]
+    pub dimensions: Dimension,
+    #[prost(message, required, tag="3")]
+    pub translation: Translation,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Step {
@@ -104,7 +108,7 @@ pub struct Step {
     #[prost(map="uint32, message", tag="2")]
     pub states: ::std::collections::HashMap<u32, CreatureState>,
     #[prost(message, repeated, tag="3")]
-    pub dynamic_walls: ::prost::alloc::vec::Vec<Wall>,
+    pub boundaries: ::prost::alloc::vec::Vec<Boundary>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Cycle {
@@ -113,28 +117,49 @@ pub struct Cycle {
     #[prost(map="uint32, message", tag="2")]
     pub creatures: ::std::collections::HashMap<u32, Creature>,
     #[prost(message, repeated, tag="3")]
-    pub walls: ::prost::alloc::vec::Vec<Wall>,
-    #[prost(message, repeated, tag="4")]
     pub steps: ::prost::alloc::vec::Vec<Step>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Constants {
     #[prost(uint32, required, tag="1")]
-    pub max_cycles: u32,
+    pub world_width: u32,
     #[prost(uint32, required, tag="2")]
-    pub max_steps: u32,
+    pub world_height: u32,
     #[prost(uint32, required, tag="3")]
-    pub creature_amount: u32,
+    pub max_steps: u32,
     #[prost(uint32, required, tag="4")]
-    pub brain_size: u32,
+    pub creature_amount: u32,
     #[prost(uint32, required, tag="5")]
-    pub input_size: u32,
+    pub initial_brain_size: u32,
     #[prost(uint32, required, tag="6")]
-    pub output_size: u32,
+    pub max_brain_size: u32,
     #[prost(uint32, required, tag="7")]
-    pub block_amount: u32,
-    #[prost(float, required, tag="8")]
-    pub block_size: f32,
+    pub min_brain_size: u32,
+    #[prost(uint32, required, tag="8")]
+    pub brain_input_size: u32,
+    #[prost(uint32, required, tag="9")]
+    pub brain_output_size: u32,
+    #[prost(uint32, required, tag="10")]
+    pub initial_block_amount: u32,
+    #[prost(uint32, required, tag="11")]
+    pub min_block_amount: u32,
+    #[prost(uint32, required, tag="12")]
+    pub max_block_amount: u32,
+    #[prost(float, required, tag="13")]
+    pub initial_block_size: f32,
+    #[prost(float, required, tag="14")]
+    pub max_block_size: f32,
+    #[prost(float, required, tag="15")]
+    pub min_block_size: f32,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Simulation {
+    #[prost(uint32, required, tag="1")]
+    pub simulation_id: u32,
+    #[prost(message, required, tag="2")]
+    pub constants: Constants,
+    #[prost(uint32, repeated, packed="false", tag="3")]
+    pub cycle_ids: ::prost::alloc::vec::Vec<u32>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]

@@ -1,50 +1,76 @@
 
 use std::fs;
 use std::path;
+use std::error::Error;
 use std::io::prelude::*;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 use prost::Message;
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
-use tiny_http::{Response, Server, Method};
+use tiny_http::{Response, Request, Server, Method};
 use std::time::{Instant};
 use log::{info};
-use bytes;
-
-use crate::engine;
-use crate::state::simulation::Simulation;
-use crate::state::models::*;
+use regex::Regex;
+use lazy_static;
 
 use crate::http::routes;
+use crate::state::simulation::{SimulationMap};
+
+lazy_static! {
+    static ref SIMULATIONS_REGEX: Regex = {
+        Regex::new(r"^/simulations$").unwrap()
+    };
+    static ref GET_SIMULATIONS_REGEX: Regex = {
+        Regex::new(r"^/simulations/\d{1,4}$").unwrap()
+    };
+    static ref CYCLES_REGEX: Regex = {
+        Regex::new(r"^/simulations/\d{1,4}/cycles$").unwrap()
+    };
+    static ref GET_CYCLES_REGEX: Regex = {
+        Regex::new(r"^/simulations/\d{1,4}/cycles/\d{1,4}$").unwrap()
+    };
+}
 
 pub fn start() {
     info!("Starting evo sim server");
 
-    let mut simulation = Simulation::new(1);
-    let sim_folder_name = format!("./simulations/sim_{}", simulation.simulation_id);
-    fs::create_dir_all(&sim_folder_name[..]).expect("Failed to create simulation directory");
+    let simulation_map: Arc<SimulationMap> = Arc::new(SimulationMap::new());
+    simulation_map.sync_from_disk();
 
-    let server = Server::http("0.0.0.0:8000").unwrap();
+    let server = Arc::new(Server::http("0.0.0.0:8000").expect("Failed to create http server"));
+    let mut handlers = Vec::new();
 
-    for request in server.incoming_requests() {
-        let method = request.method();
-        let url = request.url();
+    for _ in 0..4 {
+        let server = server.clone();
+        let sim_map = simulation_map.clone();
+        handlers.push(thread::spawn(move || {
+            for request in server.incoming_requests() {
+                let now = Instant::now();
+                let map = sim_map.clone();
+                let method = request.method();
+                let url = request.url();
+                let req_url = format!("{} {}", method, url);
 
-        info!("Request: {} {}", method, url);
+                info!("incoming request: {}", req_url);
 
-        if matches!(method, Method::Post) && url == "/perform-cycle" {
-            routes::perform_cycle::handler(&mut simulation, request);
-        } else if matches!(method, Method::Post) && url.starts_with("/perform-cycles") {
-            routes::perform_cycles::handler(&mut simulation, request);    
-        } else if matches!(method, Method::Put) && url == "/set-parameter" {
-            routes::set_parameters::handler(&mut simulation, request);
-        } else if matches!(method, Method::Get) && url == "/get-cycle" {
-            routes::get_cycle::handler(&mut simulation, request);
-        } else if matches!(method, Method::Post) && url.starts_with("/render-cycle") {
-            routes::render_cycle::handler(&mut simulation, request);
-        } else {
-            let response = Response::from_string("invalid request").with_status_code(400);
-            request.respond(response).ok();
-        }
+                if matches!(method, Method::Get) && CYCLES_REGEX.is_match(url) {
+                    routes::create_cycles::handler(request, map);
+                } else if matches!(method, Method::Post) && GET_SIMULATIONS_REGEX.is_match(url) {
+                    routes::create_simulations::handler(request, map);
+                } else {
+                    let response = Response::from_string("invalid request").with_status_code(400);
+                    request.respond(response).ok();
+                }
+
+                info!("request: {} | elapsed: {} ms", req_url, now.elapsed().as_secs_f32());
+            }
+        }));
+    }
+
+    for h in handlers {
+        h.join().unwrap();
     }
 }
