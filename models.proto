@@ -1,0 +1,120 @@
+syntax = "proto2";
+
+package models;
+
+enum Activation {
+  Sigmoid = 1;
+  Softmax = 2;
+}
+
+message Point {
+  required float x = 1;
+  required float y = 2;
+}
+
+message Dimension {
+  required float width = 1;
+  required float height = 2;
+}
+
+message Translation {
+  required Point translation = 1;
+  required float rotation = 2;
+}
+
+message Block {
+  required Point position = 1;
+}
+
+message Bounds {
+  repeated Point blocks = 1;
+  required Dimension dimensions = 2;
+}
+
+message Traits {
+  required float restitution = 1;
+  required float friction = 2;
+  required float stamina = 3;
+  required float block_mass = 4;
+  required uint32 block_amount = 5;
+  required float strength = 6;
+  repeated float color = 7;
+  repeated string gene_codes = 8;
+  required float block_size = 9;
+}
+
+message Neuron {
+  required Activation activation = 1;
+  required float bias = 2;
+  repeated float weights = 3;
+}
+
+message Brain {
+  required Activation activation = 1;
+  repeated Neuron hidden = 2;
+  repeated Neuron output = 3;
+}
+
+message Creature {
+    required uint32 creature_id = 1;
+    required Brain brain = 2;
+    required Traits traits = 3;
+    required Bounds bounds = 4;
+}
+
+message CreatureState {
+  required uint32 creature_id = 1;
+  required Translation translation = 2;
+  required float stamina = 3;
+  required uint32 decision = 4;
+}
+
+message Boundary {
+  required Point position = 1;
+  required Dimension dimensions = 2;
+  required Translation translation = 3;
+}
+
+message Step {
+  required uint32 step_id = 1;
+  map<uint32, CreatureState> states = 2;
+  repeated Boundary boundaries = 3;
+}
+
+message Cycle {
+  required uint32 cycle_id = 1;
+  map<uint32, Creature> creatures = 2;
+  repeated Step steps = 3;
+}
+
+message Constants {
+  required uint32 world_width = 1;
+  required uint32 world_height = 2;
+  required uint32 max_steps = 3;
+  required uint32 creature_amount = 4;
+  required uint32 initial_brain_size = 5;
+  required uint32 max_brain_size = 6;
+  required uint32 min_brain_size = 7;
+  required float brain_evolve_chance = 8;
+  required float min_brain_weight_nudge = 9;
+  required float max_brain_weight_nudge = 10;
+  required uint32 brain_input_size = 11;
+  required uint32 brain_output_size = 12;
+  required uint32 initial_block_amount = 13;
+  required uint32 min_block_amount = 14;
+  required uint32 max_block_amount = 15;
+  required float block_amount_evolve_chance = 16;
+  required float initial_block_size = 17;
+  required float max_block_size = 18;
+  required float min_block_size = 19;
+  required float block_size_evolve_chance = 20;
+  required float min_block_size_nudge = 21;
+  required float max_block_size_nudge = 22;
+  required float block_arrange_evolve_chance = 23;
+}
+
+message Simulation {
+  required uint32 simulation_id = 1;
+  required Constants constants = 2;
+  repeated uint32 cycle_ids = 3;
+}

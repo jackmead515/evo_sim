@@ -8,11 +8,14 @@ extern crate glutin_window;
 extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
+extern crate notify;
 
 #[macro_use]
 extern crate lazy_static;
 
 use std::env;
+use std::sync::{Arc, Mutex};
+use crate::state::simulator::{SimulationMap};
 
 pub mod http;
 pub mod engine;
@@ -31,5 +34,9 @@ fn main() {
         ).unwrap();
     }
 
-    http::server::start();
+    let mut simulation_map = SimulationMap::new();
+    simulation_map.sync_from_disk();
+    simulation_map.watch_changes();
+
+    http::server::start(Arc::new(simulation_map));
 }

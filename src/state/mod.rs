@@ -4,17 +4,17 @@ pub mod brain;
 pub mod traits;
 pub mod creature;
 pub mod simulation;
+pub mod simulator;
 
 use crate::state::models::Constants;
+
+const min_char: f32 = 65.0;
+const max_char: f32 = 90.0;
 
 pub trait GeneExpression {
     fn gene_codes(&self, constants: &Constants) -> Vec<u8>;
 
     fn ascii_codes(&self, codes: &Vec<u8>) -> Vec<String> {
-        // 65 - 90 == A - Z
-        let min_char = 65.0;
-        let max_char = 90.0;
-
         let mut genes: Vec<String> = Vec::new();
         let mut index = 0;
         let gene_code_size = 4;
@@ -49,8 +49,6 @@ pub trait GeneExpression {
 
         let min_num = 0.0;
         let max_num = 255.0;
-        let min_char = 65.0;
-        let max_char = 90.0;
         let partition_size = (codes.len() as f32 / 3.0).ceil() as usize;
         let mut index = 0;
 

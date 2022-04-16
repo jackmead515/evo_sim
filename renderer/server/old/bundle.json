@@ -1,0 +1,418 @@
+{
+  "nested": {
+    "models": {
+      "nested": {
+        "Activation": {
+          "values": {
+            "Sigmoid": 1,
+            "Softmax": 2
+          }
+        },
+        "Point": {
+          "fields": {
+            "x": {
+              "rule": "required",
+              "type": "float",
+              "id": 1
+            },
+            "y": {
+              "rule": "required",
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "Dimension": {
+          "fields": {
+            "width": {
+              "rule": "required",
+              "type": "float",
+              "id": 1
+            },
+            "height": {
+              "rule": "required",
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "Translation": {
+          "fields": {
+            "translation": {
+              "rule": "required",
+              "type": "Point",
+              "id": 1
+            },
+            "rotation": {
+              "rule": "required",
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "Block": {
+          "fields": {
+            "position": {
+              "rule": "required",
+              "type": "Point",
+              "id": 1
+            }
+          }
+        },
+        "Bounds": {
+          "fields": {
+            "blocks": {
+              "rule": "repeated",
+              "type": "Point",
+              "id": 1
+            },
+            "dimensions": {
+              "rule": "required",
+              "type": "Dimension",
+              "id": 2
+            }
+          }
+        },
+        "Traits": {
+          "fields": {
+            "restitution": {
+              "rule": "required",
+              "type": "float",
+              "id": 1
+            },
+            "friction": {
+              "rule": "required",
+              "type": "float",
+              "id": 2
+            },
+            "stamina": {
+              "rule": "required",
+              "type": "float",
+              "id": 3
+            },
+            "block_mass": {
+              "rule": "required",
+              "type": "float",
+              "id": 4
+            },
+            "block_amount": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 5
+            },
+            "strength": {
+              "rule": "required",
+              "type": "float",
+              "id": 6
+            },
+            "color": {
+              "rule": "repeated",
+              "type": "float",
+              "id": 7,
+              "options": {
+                "packed": false
+              }
+            },
+            "gene_codes": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 8
+            },
+            "block_size": {
+              "rule": "required",
+              "type": "float",
+              "id": 9
+            }
+          }
+        },
+        "Neuron": {
+          "fields": {
+            "activation": {
+              "rule": "required",
+              "type": "Activation",
+              "id": 1
+            },
+            "bias": {
+              "rule": "required",
+              "type": "float",
+              "id": 2
+            },
+            "weights": {
+              "rule": "repeated",
+              "type": "float",
+              "id": 3,
+              "options": {
+                "packed": false
+              }
+            }
+          }
+        },
+        "Brain": {
+          "fields": {
+            "activation": {
+              "rule": "required",
+              "type": "Activation",
+              "id": 1
+            },
+            "hidden": {
+              "rule": "repeated",
+              "type": "Neuron",
+              "id": 2
+            },
+            "output": {
+              "rule": "repeated",
+              "type": "Neuron",
+              "id": 3
+            }
+          }
+        },
+        "Creature": {
+          "fields": {
+            "creature_id": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 1
+            },
+            "brain": {
+              "rule": "required",
+              "type": "Brain",
+              "id": 2
+            },
+            "traits": {
+              "rule": "required",
+              "type": "Traits",
+              "id": 3
+            },
+            "bounds": {
+              "rule": "required",
+              "type": "Bounds",
+              "id": 4
+            }
+          }
+        },
+        "CreatureState": {
+          "fields": {
+            "creature_id": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 1
+            },
+            "translation": {
+              "rule": "required",
+              "type": "Translation",
+              "id": 2
+            },
+            "stamina": {
+              "rule": "required",
+              "type": "float",
+              "id": 3
+            },
+            "decision": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 4
+            }
+          }
+        },
+        "Boundary": {
+          "fields": {
+            "position": {
+              "rule": "required",
+              "type": "Point",
+              "id": 1
+            },
+            "dimensions": {
+              "rule": "required",
+              "type": "Dimension",
+              "id": 2
+            },
+            "translation": {
+              "rule": "required",
+              "type": "Translation",
+              "id": 3
+            }
+          }
+        },
+        "Step": {
+          "fields": {
+            "step_id": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 1
+            },
+            "states": {
+              "keyType": "uint32",
+              "type": "CreatureState",
+              "id": 2
+            },
+            "boundaries": {
+              "rule": "repeated",
+              "type": "Boundary",
+              "id": 3
+            }
+          }
+        },
+        "Cycle": {
+          "fields": {
+            "cycle_id": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 1
+            },
+            "creatures": {
+              "keyType": "uint32",
+              "type": "Creature",
+              "id": 2
+            },
+            "steps": {
+              "rule": "repeated",
+              "type": "Step",
+              "id": 3
+            }
+          }
+        },
+        "Constants": {
+          "fields": {
+            "world_width": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 1
+            },
+            "world_height": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 2
+            },
+            "max_steps": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 3
+            },
+            "creature_amount": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 4
+            },
+            "initial_brain_size": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 5
+            },
+            "max_brain_size": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 6
+            },
+            "min_brain_size": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 7
+            },
+            "brain_evolve_chance": {
+              "rule": "required",
+              "type": "float",
+              "id": 8
+            },
+            "min_brain_weight_nudge": {
+              "rule": "required",
+              "type": "float",
+              "id": 9
+            },
+            "max_brain_weight_nudge": {
+              "rule": "required",
+              "type": "float",
+              "id": 10
+            },
+            "brain_input_size": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 11
+            },
+            "brain_output_size": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 12
+            },
+            "initial_block_amount": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 13
+            },
+            "min_block_amount": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 14
+            },
+            "max_block_amount": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 15
+            },
+            "block_amount_evolve_chance": {
+              "rule": "required",
+              "type": "float",
+              "id": 16
+            },
+            "initial_block_size": {
+              "rule": "required",
+              "type": "float",
+              "id": 17
+            },
+            "max_block_size": {
+              "rule": "required",
+              "type": "float",
+              "id": 18
+            },
+            "min_block_size": {
+              "rule": "required",
+              "type": "float",
+              "id": 19
+            },
+            "block_size_evolve_chance": {
+              "rule": "required",
+              "type": "float",
+              "id": 20
+            },
+            "min_block_size_nudge": {
+              "rule": "required",
+              "type": "float",
+              "id": 21
+            },
+            "max_block_size_nudge": {
+              "rule": "required",
+              "type": "float",
+              "id": 22
+            },
+            "block_arrange_evolve_chance": {
+              "rule": "required",
+              "type": "float",
+              "id": 23
+            }
+          }
+        },
+        "Simulation": {
+          "fields": {
+            "simulation_id": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 1
+            },
+            "constants": {
+              "rule": "required",
+              "type": "Constants",
+              "id": 2
+            },
+            "cycle_ids": {
+              "rule": "repeated",
+              "type": "uint32",
+              "id": 3,
+              "options": {
+                "packed": false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,6 @@
 /target
 /simulations
 
+node_modules
+
 __pycache__

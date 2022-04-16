@@ -135,22 +135,38 @@ pub struct Constants {
     pub max_brain_size: u32,
     #[prost(uint32, required, tag="7")]
     pub min_brain_size: u32,
-    #[prost(uint32, required, tag="8")]
-    pub brain_input_size: u32,
-    #[prost(uint32, required, tag="9")]
-    pub brain_output_size: u32,
-    #[prost(uint32, required, tag="10")]
-    pub initial_block_amount: u32,
+    #[prost(float, required, tag="8")]
+    pub brain_evolve_chance: f32,
+    #[prost(float, required, tag="9")]
+    pub min_brain_weight_nudge: f32,
+    #[prost(float, required, tag="10")]
+    pub max_brain_weight_nudge: f32,
     #[prost(uint32, required, tag="11")]
-    pub min_block_amount: u32,
+    pub brain_input_size: u32,
     #[prost(uint32, required, tag="12")]
+    pub brain_output_size: u32,
+    #[prost(uint32, required, tag="13")]
+    pub initial_block_amount: u32,
+    #[prost(uint32, required, tag="14")]
+    pub min_block_amount: u32,
+    #[prost(uint32, required, tag="15")]
     pub max_block_amount: u32,
-    #[prost(float, required, tag="13")]
+    #[prost(float, required, tag="16")]
+    pub block_amount_evolve_chance: f32,
+    #[prost(float, required, tag="17")]
     pub initial_block_size: f32,
-    #[prost(float, required, tag="14")]
+    #[prost(float, required, tag="18")]
     pub max_block_size: f32,
-    #[prost(float, required, tag="15")]
+    #[prost(float, required, tag="19")]
     pub min_block_size: f32,
+    #[prost(float, required, tag="20")]
+    pub block_size_evolve_chance: f32,
+    #[prost(float, required, tag="21")]
+    pub min_block_size_nudge: f32,
+    #[prost(float, required, tag="22")]
+    pub max_block_size_nudge: f32,
+    #[prost(float, required, tag="23")]
+    pub block_arrange_evolve_chance: f32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Simulation {

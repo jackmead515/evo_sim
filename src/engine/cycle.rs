@@ -154,7 +154,7 @@ pub fn update_creatures(
       }
 
       if creature_id == 0 {
-        println!("{:?}", creature_state);
+        // println!("{:?}", creature_state);
         // info!("inputs: {:?}, outputs: {:?}, decision: {}", inputs, outputs, decision);
         // println!("\tspeed {}, sfactor {}", net_speed, stamina_factor);
       }

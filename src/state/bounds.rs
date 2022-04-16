@@ -7,32 +7,9 @@ use std::collections::{HashSet, HashMap};
 use crate::state::{GeneExpression, Evolver};
 use crate::state::models::*;
 
-//impl Block {
-    // Translates this block by the x and y and by the radian rotation
-    // and returns a new Block with the updated position
-    // pub fn translate(&mut self, x: f32, y: f32, rotation: f32) -> Block {
-    //     let sin = rotation.sin(); let cos = rotation.cos();
-
-    //     let x0 = (self.p1.x*cos - self.p1.y*sin) + x;
-    //     let y0 = (self.p1.x*sin + self.p1.y*cos) + y;
-
-    //     let x1 = (self.p2.x*cos - self.p2.y*sin) + x;
-    //     let y1 = (self.p2.x*sin + self.p2.y*cos) + y;
-
-    //     let x2 = (self.p3.x*cos - self.p3.y*sin) + x;
-    //     let y2 = (self.p3.x*sin + self.p3.y*cos) + y;
-
-    //     let x3 = (self.p4.x*cos - self.p4.y*sin) + x;
-    //     let y3 = (self.p4.x*sin + self.p4.y*cos) + y;
-
-    //     return Block {
-    //         p1: Point { x: x0, y: y0 },
-    //         p2: Point { x: x1, y: y1 },
-    //         p3: Point { x: x2, y: y2 },
-    //         p4: Point { x: x3, y: y3 }
-    //     };
-    // }
-//}
+// 65 - 90 == A - Z
+const min_char: f32 = 65.0;
+const max_char: f32 = 90.0;
 
 impl Bounds {
 
@@ -127,27 +104,23 @@ impl Bounds {
             }
         }
     }
-
-    
-
-    // Translates this block by the x and y and by the radian rotation
-    // and returns a new Block with the updated position
-    // pub fn translate(&self, x: f32, y: f32, rotation: f32) -> Bounds {
-    //     let mut new_bounds = self.clone();
-
-    //     for block in new_bounds.blocks.iter_mut() {
-    //         *block = block.translate(x, y, rotation);
-    //     }
-
-    //     return new_bounds;
-    // }
-
 }
 
 impl Evolver for Bounds {
     fn evolve(&self, constants: &Constants) -> Bounds {
         let new_bounds = self.clone();
-    
+        let mut range = rand::thread_rng();
+
+        let amount_chance = range.gen_range(0.0, 1.0);
+        if amount_chance >= constants.block_amount_evolve_chance {
+
+        }
+
+        let arange_chance = range.gen_range(0.0, 1.0);
+        if arange_chance >= constants.block_arrange_evolve_chance {
+
+        }
+
         return new_bounds;
     }
 }
@@ -155,11 +128,6 @@ impl Evolver for Bounds {
 impl GeneExpression for Bounds {
     fn gene_codes(&self, constants: &Constants) -> Vec<u8> {
         let mut weight_norms: Vec<u8> = Vec::new();
-
-        // 65 - 90 == A - Z
-        let min_char = 65.0;
-        let max_char = 90.0;
-
         let max_block_pos = (self.dimensions.width * self.dimensions.height) as f32;
 
         for block in self.blocks.iter() {

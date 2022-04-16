@@ -17,7 +17,7 @@ use regex::Regex;
 use lazy_static;
 
 use crate::http::routes;
-use crate::state::simulation::{SimulationMap};
+use crate::state::simulator::{SimulationMap};
 
 lazy_static! {
     static ref SIMULATIONS_REGEX: Regex = {
@@ -34,11 +34,8 @@ lazy_static! {
     };
 }
 
-pub fn start() {
+pub fn start(simulation_map: Arc<SimulationMap>) {
     info!("Starting evo sim server");
-
-    let simulation_map: Arc<SimulationMap> = Arc::new(SimulationMap::new());
-    simulation_map.sync_from_disk();
 
     let server = Arc::new(Server::http("0.0.0.0:8000").expect("Failed to create http server"));
     let mut handlers = Vec::new();
@@ -56,16 +53,14 @@ pub fn start() {
 
                 info!("incoming request: {}", req_url);
 
-                if matches!(method, Method::Get) && CYCLES_REGEX.is_match(url) {
+                if matches!(method, Method::Post) && CYCLES_REGEX.is_match(url) {
                     routes::create_cycles::handler(request, map);
-                } else if matches!(method, Method::Post) && GET_SIMULATIONS_REGEX.is_match(url) {
-                    routes::create_simulations::handler(request, map);
                 } else {
                     let response = Response::from_string("invalid request").with_status_code(400);
                     request.respond(response).ok();
                 }
 
-                info!("request: {} | elapsed: {} ms", req_url, now.elapsed().as_secs_f32());
+                info!("request: {} | elapsed: {} secs", req_url, now.elapsed().as_secs_f32());
             }
         }));
     }

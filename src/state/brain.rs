@@ -204,31 +204,34 @@ impl Brain {
     pub fn evolve(&self, constants: &Constants) -> Brain {
         let mut new_brain = self.clone();
         let mut range = rand::thread_rng();
-        let nudge = 0.01;
 
-        let hidden_l = new_brain.hidden.len();
-        let hidden_wl = new_brain.hidden[0].weights.len();
+        // if, randomly, we evolve the brain, do it!
+        let chance = range.gen_range(0.0f32, 1.0f32);
+        if chance >= constants.brain_evolve_chance {
 
-        let output_l = new_brain.output.len();
-        let output_wl = new_brain.output[0].weights.len();
+            let hidden_wl = new_brain.hidden[0].weights.len();
+            let output_wl = new_brain.output[0].weights.len();
 
-        for _ in 0..5 {
-            let r1 = range.gen_range(0, hidden_l-1);
-            let r2 = range.gen_range(0, hidden_wl-1);
-            if nudge + new_brain.hidden[r1].weights[r2] > 1.0 {
-                new_brain.hidden[r1].weights[r2] -= nudge;
-            } else {
-                new_brain.hidden[r1].weights[r2] += nudge;
+            // for each hidden neuron, nudge a random weight
+            for neuron in 0..new_brain.hidden.len() {
+                let weight = range.gen_range(0, hidden_wl-1);
+                let nudge = range.gen_range(constants.min_brain_weight_nudge, constants.max_brain_weight_nudge);
+                if nudge + new_brain.hidden[neuron].weights[weight] > 1.0 {
+                    new_brain.hidden[neuron].weights[weight] -= nudge;
+                } else {
+                    new_brain.hidden[neuron].weights[weight] += nudge;
+                }
             }
-        }
 
-        for _ in 0..5 {
-            let r1 = range.gen_range(0, output_l-1);
-            let r2 = range.gen_range(0, output_wl-1);
-            if nudge + new_brain.output[r1].weights[r2] > 1.0 {
-                new_brain.output[r1].weights[r2] -= nudge;
-            } else {
-                new_brain.output[r1].weights[r2] += nudge;
+            // for each outout neuron, nudge a random weight
+            for neuron in 0..new_brain.output.len() {
+                let weight = range.gen_range(0, output_wl-1);
+                let nudge = range.gen_range(constants.min_brain_weight_nudge, constants.max_brain_weight_nudge);
+                if nudge + new_brain.output[neuron].weights[weight] > 1.0 {
+                    new_brain.output[neuron].weights[weight] -= nudge;
+                } else {
+                    new_brain.output[neuron].weights[weight] += nudge;
+                }
             }
         }
 
@@ -236,41 +239,3 @@ impl Brain {
     } 
 
 }
-
-
-// pub fn compute(
-//     creature_map: Arc<Mutex<HashMap<u32, Creature>>>,
-//     decision_map: Arc<Mutex<HashMap<u32, u8>>>,
-// ) -> JoinHandle<()> {
-//     let creature_map = creature_map.clone();
-//     let decision_map = decision_map.clone();
-//     return thread::spawn(move || {
-
-//         let (sender, receiver) = channel();
-
-//         for _ in 0..8 {
-//             let decision_map = decision_map.clone();
-//             let handle = thread::spawn(move || {
-//                 let (_outputs, decision) = ccreature.brain.compute(&vec![0.1, 0.2, 0.3, 0.4, 0.5]);
-                
-//                 match decision_map.lock() {
-//                     Ok(mut map) => {
-//                         map.insert(creature_id, decision);
-//                     },
-//                     Err(_) => {},
-//                 };
-//             });
-//             handles.push(handle);
-//         }
-
-//         match creature_map.lock() {
-//             Ok(map) => {
-//                 for (creature_id, creature) in map.iter() {
-                    
-//                 }
-//             }
-//         }
-
-        
-//     }); 
-// }

@@ -39,7 +39,20 @@ impl Traits {
 
 impl Evolver for Traits {
     fn evolve(&self, constants: &Constants) -> Traits {
-        let new_traits = self.clone();
+        let mut new_traits = self.clone();
+        let mut range = rand::thread_rng();
+
+        let size_chance = range.gen_range(0.0, 1.0);
+        if size_chance >= constants.block_size_evolve_chance {
+            let pm = range.gen_range(0.0, 1.0);
+            let nudge = range.gen_range(constants.min_block_size_nudge, constants.max_block_size_nudge);
+
+            if pm >= 0.5 {
+                new_traits.block_size += nudge;
+            } else {
+                new_traits.block_size -= nudge;
+            }            
+        }
 
         return new_traits;
     }

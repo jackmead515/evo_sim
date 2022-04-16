@@ -1,0 +1,41 @@
+
+.toolbar {
+  position: relative;
+  background-color: black;
+  border-bottom: 1px solid #aaa;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.toolbar__select {
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+  border-right: 1px solid #aaa;
+}
+
+.toolbar__steps {
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+}
+
+.sidebar {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 20vw;
+  padding: 10px;
+  box-sizing: border-box;
+  position: absolute;
+  height: 100vh;
+  top: 0;
+  background-color: #000;
+  border-right: 1px solid #aaa;
+  z-index: 999;
+}
+
+.sidebar__top {
+  
+}

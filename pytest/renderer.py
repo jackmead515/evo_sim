@@ -5,7 +5,7 @@ from tkinter import *
 import time
 import os
 import zlib
-import models_pb2
+import renderer.server.src.models_pb2 as models_pb2
 
 def rgb_hack(rgb):
     return "#%02x%02x%02x" % rgb 
